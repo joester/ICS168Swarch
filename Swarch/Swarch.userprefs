@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\PelletScript.cs">
+    <Files>
+      <File FileName="Assets\PelletScript.cs" Line="53" Column="71" />
+      <File FileName="Assets\Player1Script.cs" Line="125" Column="24" />
+      <File FileName="Assets\GameProcess.cs" Line="27" Column="30" />
+      <File FileName="Assets\Player2Script.cs" Line="98" Column="22" />
+      <File FileName="Assets\BorderScript.cs" Line="20" Column="27" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
