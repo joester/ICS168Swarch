@@ -38,6 +38,8 @@
 -define:UNITY_EDITOR_OSX
 'Assets/BorderScript.cs'
 'Assets/GameProcess.cs'
+'Assets/GetPlayerName.cs'
+'Assets/LoginScreen.cs'
 'Assets/MainMenu.cs'
 'Assets/NTPTime.cs'
 'Assets/PelletScript.cs'
