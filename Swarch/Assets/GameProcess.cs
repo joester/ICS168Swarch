@@ -8,6 +8,7 @@ public class GameProcess : MonoBehaviour {
 	//PUBLIC MEMBERS 
 	//public bool play;
 	public int clientNumber;
+	public string playerName;
 	GameObject Player1;
 	GameObject Player2;
 	public int winningClientNumber;
