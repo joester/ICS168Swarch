@@ -25,6 +25,7 @@ public class GameProcess : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
 		uniClock = new Stopwatch();
 		winningWeight = 10;
 
