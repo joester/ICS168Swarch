@@ -31,3 +31,5 @@ C:\Users\jbshepar\Desktop\Project1\Project1\obj\x86\Debug\Project1.exe.manifest
 C:\Users\jbshepar\Desktop\Project1\Project1\obj\x86\Debug\Project1.application
 C:\Users\jbshepar\Desktop\Project1\Project1\obj\x86\Debug\Project1.exe
 C:\Users\jbshepar\Desktop\Project1\Project1\obj\x86\Debug\Project1.pdb
+C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\Server Code\Project1\obj\x86\Debug\Project1.exe
+C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\Server Code\Project1\obj\x86\Debug\Project1.pdb

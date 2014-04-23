@@ -31,6 +31,7 @@ namespace Project1
 
         protected static bool playing = false;
 
+        //we'll use this code as a basis for our swarch server
         public Server()
         {
             
