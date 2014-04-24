@@ -13,7 +13,8 @@ using System.Threading;
 public class Sockets {
 
 
-    const string SERVER_LOCATION = "128.195.11.128"; 
+    //const string SERVER_LOCATION = "128.195.11.128"; 
+	const string SERVER_LOCATION = "169.234.47.143"; 
 	//const string SERVER_LOCATION = "169.234.46.36";
     const int SERVER_PORT = 4185; //FILL THESE OUT FOR YOUR OWN SERVER
 	
