@@ -1,0 +1,25 @@
+Initialize engine version: 4.3.3f1 (c8ca9b6b9936)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [atiumdag.dll 8.14.10.678]
+    Renderer: AMD M880G with ATI Mobility Radeon HD 4200     
+    Vendor:   ATI
+    VRAM:     1084 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=1 INTZ=0 RAWZ=0 NULL=0 RESZ=1 SlowINTZ=1
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\Joey\Documents\GitHub\Swarchv7\Swarch\Swarch_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\Joey\Documents\GitHub\Swarchv7\Swarch\Swarch_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\Joey\Documents\GitHub\Swarchv7\Swarch\Swarch_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\Joey\Documents\GitHub\Swarchv7\Swarch\Swarch_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+- Completed reload, in  0.097 seconds
+desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+Platform assembly: C:\Users\Joey\Documents\GitHub\Swarchv7\Swarch\Swarch_Data\Managed\System.dll (this message is harmless)
+UnloadTime: 1.148887 ms
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 7 unused Assets to reduce memory usage. Loaded Objects now: 166.
+Total: 3.324363 ms (FindLiveObjects: 0.049990 ms CreateObjectMapping: 0.035707 ms MarkObjects: 0.419116 ms  DeleteObjects: 0.034368 ms)
+
+Read failure : Thread loop

@@ -1,8 +1,28 @@
 ﻿<Properties>
+<<<<<<< HEAD
   <MonoDevelop.Ide.Workspace />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/BorderScript.cs">
     <Files>
       <File FileName="Assets/BorderScript.cs" Line="1" Column="1" />
+=======
+<<<<<<< HEAD
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\LoginScreenGUI.cs">
+    <Files>
+      <File FileName="Assets\GetPlayerName.cs" Line="13" Column="53" />
+      <File FileName="Assets\LoginScreenGUI.cs" Line="65" Column="5" />
+      <File FileName="Assets\ThreadSock.cs" Line="1" Column="1" />
+      <File FileName="Assets\Sockets.cs" Line="17" Column="51" />
+      <File FileName="Assets\GameProcess.cs" Line="47" Column="18" />
+      <File FileName="Assets\Player1Script.cs" Line="30" Column="3" />
+      <File FileName="Assets\Player2Script.cs" Line="34" Column="3" />
+=======
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Sockets.cs">
+    <Files>
+      <File FileName="Assets/Sockets.cs" Line="1" Column="1" />
+>>>>>>> 2b7cff2c52fc4434a153f218feb158a3c4f26d86
+>>>>>>> FETCH_HEAD
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

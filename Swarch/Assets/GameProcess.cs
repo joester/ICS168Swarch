@@ -14,6 +14,7 @@ public class GameProcess : MonoBehaviour {
 	public int winningClientNumber;
 	public int winningWeight;
 	int numStartingPellets;
+	public bool play;
 
 	//PRIVATE MEMBERS
 	private Sockets socks;
@@ -38,10 +39,8 @@ public class GameProcess : MonoBehaviour {
 		winningClientNumber = -1;
 		numStartingPellets = 5;
 
-		for (int i = 0; i < numStartingPellets; i++)
-		{
-			Instantiate((GameObject)Resources.Load("Pellet"), new Vector3(UnityEngine.Random.Range(-4f,4f), UnityEngine.Random.Range(-4f,4f), 0), transform.rotation);
-		}
+		play = false;
+	
 	}
 	
 	// Update is called once per frame
@@ -55,6 +54,22 @@ public class GameProcess : MonoBehaviour {
 			string[] tokens = stringBuffer.Split(new string[] {"\\"}, StringSplitOptions.None);
 
 			//Determine the content of the string sent from the sever
+
+			if(tokens[0].Equals("client"))
+			{
+				// "client\\clientNumber"
+				clientNumber = Int32.Parse(tokens[1]);
+			}
+
+			else if (tokens[0].Equals("start"))
+			{
+				play = true;
+				GameObject.Find("GameGUI").GetComponent<GameGUIScript>().guiText.text = "";
+				//for (int i = 0; i < numStartingPellets; i++)
+				//{
+				//	Instantiate((GameObject)Resources.Load("Pellet"), new Vector3(UnityEngine.Random.Range(-4f,4f), UnityEngine.Random.Range(-4f,4f), 0), transform.rotation);
+				//}
+			}
 
 				// hit\\posX\\posY\\VelX\\VelY\\time
 //			else if (tokens[0].Equals("hit"))
@@ -92,22 +107,22 @@ public class GameProcess : MonoBehaviour {
 			// "start\\xVelocity\\yVelocity"
 
 
-//			else if(tokens[0].Equals("lag"))
-//			{
-//				dT = NTPTime.getNTPTime(ref uniClock);
-//				dT.AddMinutes(uniClock.Elapsed.Minutes);
-//				dT.AddSeconds(uniClock.Elapsed.Seconds);
-//				dT.AddMilliseconds(uniClock.Elapsed.Milliseconds);
-//
-//				long clientTime = dT.Ticks;
-//				long serverTime = Convert.ToInt64(tokens[1]);
-//				
-//				long difference = clientTime - serverTime;
-//
-//				TimeSpan latency = new TimeSpan(difference);
-//
-//				GameObject.Find("LatencyText").guiText.text = latency.Milliseconds.ToString() + " ms";
-			//}
+			else if(tokens[0].Equals("lag"))
+			{
+				dT = NTPTime.getNTPTime(ref uniClock);
+				dT.AddMinutes(uniClock.Elapsed.Minutes);
+				dT.AddSeconds(uniClock.Elapsed.Seconds);
+				dT.AddMilliseconds(uniClock.Elapsed.Milliseconds);
+
+				long clientTime = dT.Ticks;
+				long serverTime = Convert.ToInt64(tokens[1]);
+				
+				long difference = clientTime - serverTime;
+
+				TimeSpan latency = new TimeSpan(difference);
+
+				GameObject.Find("LatencyText").guiText.text = latency.Milliseconds.ToString() + " ms";
+			}
 
 //			else if (tokens[0].Equals("gameover"))
 //			{

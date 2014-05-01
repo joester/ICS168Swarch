@@ -12,6 +12,8 @@ public class Player2Script : MonoBehaviour {
 	public float threshold;
 	
 	public float weight;
+
+	public GameProcess gp;
 	
 	// Use this for initialization
 	void Start () {
@@ -25,6 +27,8 @@ public class Player2Script : MonoBehaviour {
 		
 		threshold = 0.2f;
 		weight = 1;
+		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
+
 		
 		StartCoroutine ( SendDelay() );
 	}
@@ -32,38 +36,39 @@ public class Player2Script : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
-		//if (gp.clientNumber == 2 && 
-		if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-			yVelocity = 0.1f;
-		
-		if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-			yVelocity = -0.1f;
-		
-		if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-			xVelocity = -0.1f;
-		
-		if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-			xVelocity = 0.1f;
-		
-		if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) ||
-		    Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
-			yVelocity = 0.0f;	
-		
-		if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D) ||
-		    Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
-			xVelocity = 0.0f;
+		if (gp.clientNumber == 2)
+		{
+			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+				yVelocity = 0.1f;
+			
+			if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+				yVelocity = -0.1f;
+			
+			if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+				xVelocity = -0.1f;
+			
+			if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+				xVelocity = 0.1f;
+			
+			if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) ||
+			    Input.GetKeyUp(KeyCode.UpArrow) || Input.GetKeyUp(KeyCode.DownArrow))
+				yVelocity = 0.0f;	
+			
+			if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D) ||
+			    Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
+				xVelocity = 0.0f;
+		}
 	}
 	
-//	void FixedUpdate()
-//	{
-//		//if (gp.clientNumber == 2 && gp.play)
-//		//{
-//		transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
-//		currentXPosition = transform.position.x;
-//		currentYPosition = transform.position.y;
-//		
-//		//}
-//	}
+	void FixedUpdate()
+	{
+		if (gp.clientNumber == 2 && gp.play)
+		{
+			transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
+			currentXPosition = transform.position.x;
+			currentYPosition = transform.position.y;		
+		}
+	}
 	
 	IEnumerator SendDelay() {
 		
@@ -73,18 +78,20 @@ public class Player2Script : MonoBehaviour {
 			
 			yield return new WaitForSeconds ( delay ) ;
 			
-			//if (gp.clientNumber == 1 && 
-			if (Mathf.Abs(currentXPosition - lastXPosition) >= threshold)
-			{				
-				lastXPosition = currentXPosition;
-				//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
-			}
-			
-			if (Mathf.Abs(currentYPosition - lastYPosition) >= threshold)
+			if (gp.clientNumber == 2)
 			{
-				lastYPosition = currentYPosition;
-				//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
-			}			
+				if (Mathf.Abs(currentXPosition - lastXPosition) >= threshold)
+				{				
+					lastXPosition = currentXPosition;
+					//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
+				}
+				
+				if (Mathf.Abs(currentYPosition - lastYPosition) >= threshold)
+				{
+					lastYPosition = currentYPosition;
+					//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
+				}	
+			}
 		}
 	}
 	
