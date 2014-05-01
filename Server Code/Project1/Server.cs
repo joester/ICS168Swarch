@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 
+
 namespace Project1
 {
     public class Server
@@ -37,7 +38,7 @@ namespace Project1
             
             uniClock = new Stopwatch();
  
-            maxPlayers = 2;
+            maxPlayers = 4;
             numberOfClients = 0;
             listener = new TcpListener(4185);
             socArray = new Socket[maxPlayers];
