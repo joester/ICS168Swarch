@@ -7,11 +7,18 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using System.Data.SQLite;
+
 
 namespace SwarchServer
 {
     class Server
     {
+
+		SQLiteConnection swarchDatabase;
+		string name, password; 
+
+
         protected int maxPlayers;
         protected int numberOfClients;
         protected static TcpListener listener;
@@ -27,14 +34,61 @@ namespace SwarchServer
 
         protected static bool playing = false;
 
+
+
         public Server()
         {
+			createSwarchDatabase();
+			connectToDatabase();
+			createTable();
+			fillPlayerTable();
+
+
+
+
             maxPlayers = 4;
             numberOfClients = 0;
             listener = new TcpListener(4185);
             socArray = new Socket[maxPlayers];
             clientArray = new Client[maxPlayers];
         }
+
+		// Creates an empty database file
+		void createSwarchDatabase()
+		{
+			SQLiteConnection.CreateFile("SwarchDatabase.sqlite");
+		}
+
+		// Creates a connection with our database file.
+		void connectToDatabase()
+		{
+			swarchDatabase = new SQLiteConnection("Data Source=SwarchDatabase.sqlite;Version=3;");
+			swarchDatabase.Open();
+		}
+
+		// Creates a table named 'highscores' with two columns: name (a string of max 20 characters) and score (an int)
+		void createTable()
+		{
+			string sql = "create table playerInfo (name varchar(20), password varchar(50))";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+		}
+
+		// Inserts some values in the highscores table.
+		// As you can see, there is quite some duplicate code here, we'll solve this in part two.
+		void fillPlayerTable()
+		{
+			string sql = "insert into playerInfo  (name, password) values ('Jay', '39ec785d60a1b23bfda9944b9138bbcf')";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+			sql = "insert into playerInfo  (name, password) values ('Me', 3232 )";
+			command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+			sql = "insert into playerInfo  (name, password) values ('Not me', 30011)";
+			command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+		}
+
 
         public void Listen()
         {

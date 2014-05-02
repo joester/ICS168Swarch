@@ -6,12 +6,15 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using System.Data.SQLite;
 
 
 namespace Project1
 {
+
     public class Server
     {
+		SQLiteConnection mDatabase;
         protected static int maxPlayers;
         protected static int numberOfClients;
         protected static int playerOneScore;
@@ -35,6 +38,8 @@ namespace Project1
         //we'll use this code as a basis for our swarch server
         public Server()
         {
+
+			mDatabase = new SQLiteConnection("MyDatabase.sqlite");
             
             uniClock = new Stopwatch();
  
