@@ -50,6 +50,7 @@
      <Compile Include="Assets\GameGUIScript.cs" />
      <Compile Include="Assets\GameProcess.cs" />
      <Compile Include="Assets\GetPlayerName.cs" />
+     <Compile Include="Assets\LoginScreen.cs" />
      <Compile Include="Assets\LoginScreenGUI.cs" />
      <Compile Include="Assets\NTPTime.cs" />
      <Compile Include="Assets\PelletScript.cs" />

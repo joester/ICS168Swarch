@@ -13,6 +13,11 @@ namespace SwarchServer
 {
     class Server
     {
+
+		SQLiteConnection swarchDatabase;
+		string name, password; 
+
+
         protected int maxPlayers;
         protected int minPlayers;
         protected static int numberOfClients;
@@ -33,9 +38,13 @@ namespace SwarchServer
 
         public Thread listenerThead;
 
+
         public Server()
         {
-            uniClock = new Stopwatch();
+			//createSwarchDatabase();
+			//connectToDatabase();
+			//createTable();
+			//fillPlayerTable();
 
             maxPlayers = 4;
             minPlayers = 2;
@@ -46,9 +55,59 @@ namespace SwarchServer
 
             listenerThead = new Thread(new ThreadStart(this.Listen));
 
+
+            uniClock = new Stopwatch();
+
+
             loop = new ServerLoop();
             loop.loopThread.Start();
+
         }
+
+		// Creates an empty database file
+		void createSwarchDatabase()
+		{
+            try
+            {
+                
+                SQLiteConnection.CreateFile("SwarchDatabase.sqlite");
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+		}
+
+		// Creates a connection with our database file.
+		void connectToDatabase()
+		{
+			swarchDatabase = new SQLiteConnection("Data Source=SwarchDatabase.sqlite;Version=3;");
+			swarchDatabase.Open();
+		}
+
+		// Creates a table named 'highscores' with two columns: name (a string of max 20 characters) and score (an int)
+		void createTable()
+		{
+			string sql = "create table playerInfo (name varchar(20), password varchar(50))";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+		}
+
+		// Inserts some values in the highscores table.
+		// As you can see, there is quite some duplicate code here, we'll solve this in part two.
+		void fillPlayerTable()
+		{
+			string sql = "insert into playerInfo  (name, password) values ('Jay', '39ec785d60a1b23bfda9944b9138bbcf')";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+			sql = "insert into playerInfo  (name, password) values ('Me', 3232 )";
+			command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+			sql = "insert into playerInfo  (name, password) values ('Not me', 30011)";
+			command = new SQLiteCommand(sql, swarchDatabase);
+			command.ExecuteNonQuery();
+		}
+
 
         public void Listen()
         {
@@ -73,6 +132,7 @@ namespace SwarchServer
                         sw.AutoFlush = true;//enable automatic flushing, flush thte wrtie stream after every write command, no need to send buffered data
 
                         Client client = new Client(nws, sr, sw, numberOfClients + 1);
+                        client.thread.Start();
 
                         clientArray[numberOfClients] = client;
 
@@ -80,8 +140,8 @@ namespace SwarchServer
 
                         loop.playerConnected();
 
-                        Console.WriteLine("Client " + numberOfClients + " has connected");
-                        sw.WriteLine("client\\" + client.clientNumber);
+                        Console.WriteLine("Client " + client.clientNumber + " has connected");
+                        client.sw.WriteLine("client\\" + client.clientNumber);
 
                     }
                     catch (Exception e)
@@ -95,11 +155,6 @@ namespace SwarchServer
 
         public class ServerLoop
         {
-
-            Thread thread1;
-            Thread thread2;
-            Thread thread3;
-            Thread thread4;
 
             public Thread loopThread;
 
@@ -118,23 +173,15 @@ namespace SwarchServer
                 {
                     case 1:
                         client1 = clientArray[0];
-                        thread1 = client1.thread;
-                        thread1.Start();
                         break;
                     case 2:
                         client2 = clientArray[1];
-                        thread2 = client2.thread;
-                        thread2.Start();
                         break;
                     case 3:
                         client3 = clientArray[2];
-                        thread3 = client3.thread;
-                        thread3.Start();
                         break;
                     case 4:
                         client4 = clientArray[3];
-                        thread4 = client4.thread;
-                        thread4.Start();
                         break;
                     
                 }
@@ -143,12 +190,14 @@ namespace SwarchServer
             //recursively check if all clients are ready
             public bool ClientsReady(Client[] clients, int currentClient) 
             {
-                if (numberOfClients < 2)
-                    return false;
-                else if (currentClient == numberOfClients - 1)
+
+                if (currentClient == 0)
                     return clients[currentClient].clientReady;
-                else
-                    return clients[currentClient].clientReady && ClientsReady(clients, currentClient++);
+                else if (currentClient > 0)
+                    return clients[currentClient].clientReady && ClientsReady(clientArray, currentClient - 1);
+
+                return false;
+              
             }
 
             //server loop that checks messages from clients
@@ -156,159 +205,123 @@ namespace SwarchServer
             {
 
                 while (true)
-                {
-                    if (ClientsReady(clientArray, 0))
-                    {
+                {                 
+                   try
+                   {
+                       if (ClientsReady(clientArray, numberOfClients-1) && numberOfClients > 1)
+                       {
 
-                        foreach (Client c in clientArray)
-                        {
-                            c.clientReady = false;
-                            c.sw.WriteLine("start");
-                        }
+                           foreach (Client c in clientArray)
+                           {
+                               c.clientReady = false;
+                               c.sw.WriteLine("start");
+                           }
 
-                        playing = true;
+                           playing = true;
+                       }
+
+                       //check each client in the array
+                       //if they have commands waiting in the queue, dequeue and execute that command
+                       foreach (Client client in clientArray)
+                       {
+                           if (client.commandQueue.Count > 0)
+                           {
+                               string command = client.commandQueue.Dequeue();
+
+                               string[] tokens = command.Split(new string[] { "\\" }, StringSplitOptions.None);
+
+                               if (tokens[0].Equals("play"))
+                               {
+                                   client.clientReady = true;
+                                   Console.WriteLine("client " + client.clientNumber + " is ready");
 
 
+                                   foreach (Client c in clientArray)
+                                   {
+                                       c.sw.WriteLine("connected\\" + client.clientNumber);
+
+                                       if ((c.clientReady || playing) && !client.spawned)
+                                       {
+                                           if (c.clientNumber != client.clientNumber)
+                                                 client.sw.WriteLine("connected\\" + c.clientNumber);
+
+                                       }
+                                   }
+
+                                   client.spawned = true;
+                               }
+
+                               else if (tokens[0].Equals("velocity"))
+                               {
+                                   if (tokens[1].Equals("x"))
+                                   {
+                                       client.xVelocity = float.Parse(tokens[2]);
+                                       client.yVelocity = 0;
+                                   }
+                                   else
+                                   {
+                                       client.yVelocity = float.Parse(tokens[2]);
+                                       client.xVelocity = 0;
+                                   }
+
+                                   foreach (Client c in clientArray)
+                                   {
+                                       if (c.clientNumber != client.clientNumber)
+                                           c.sw.WriteLine("velocity\\1\\" + client1.xVelocity + "\\" + client1.yVelocity);
+                                   }
+
+                               }
+
+                               else if (tokens[0].Equals("position"))
+                               {
+                                   if (tokens[1].Equals("x"))
+                                   {
+                                       client.whalePositionX = float.Parse(tokens[2]);
+                                   }
+                                   else if (tokens[1].Equals("y"))
+                                   {
+                                       client.whalePositionY = float.Parse(tokens[2]);
+                                   }
+
+                                   foreach (Client c in clientArray)
+                                   {
+                                       if (c.clientNumber != client.clientNumber)
+                                           c.sw.WriteLine("velocity\\1\\" + client.xVelocity + "\\" + client.yVelocity);
+                                   }
+                               }
+
+                               else if (tokens[0].Equals("score"))
+                               {
+                                   client1.sw.WriteLine("score\\" + tokens[1]);
+                                   client2.sw.WriteLine("score\\" + tokens[1]);
+                               }
+
+                               else if (tokens[0].Equals("lag"))
+                               {
+                                   DateTime dt = NTPTime.getNTPTime(ref uniClock);
+                                   dt.AddMinutes(uniClock.Elapsed.Minutes);
+                                   dt.AddSeconds(uniClock.Elapsed.Seconds);
+                                   dt.AddMilliseconds(uniClock.ElapsedMilliseconds);
+
+                                   long ticks = dt.Ticks;
+
+                                   client1.sw.WriteLine("lag\\" + ticks);
+                               }
+                               else
+                               {
+                                   //do nothing
+                               }
+
+                           }
+                       }
+                
                     }
-
-                    if (numberOfClients >= 2)
-                    {
-
-                        if (client1.commandQueue.Count > 0)
-                        {
-                            string command = client1.commandQueue.Dequeue();
-
-                            string[] tokens = command.Split(new string[] { "\\" }, StringSplitOptions.None);
-
-                            if (tokens[0].Equals("play"))
-                            {
-                                client1.clientReady = true;
-                            }
-
-                            else if (tokens[0].Equals("velocity"))
-                            {
-                                if (tokens[1].Equals("x"))
-                                {
-                                    client1.xVelocity = float.Parse(tokens[2]);
-                                }
-                                else
-                                {
-                                    client1.yVelocity = float.Parse(tokens[2]);
-                                }
-
-                                client2.sw.WriteLine("velocity\\1\\" + tokens[1] + "\\" + tokens[2]);
-
-                                /*
-                                client3.sw.WriteLine("Velocity\\1\\" + tokens[1] + "\\" + tokens[2]);
-                                client4.sw.WriteLine("Velocity\\1\\" + tokens[1] + "\\" + tokens[2]);
-                                 */
-                            }
-
-                            else if (tokens[0].Equals("position"))
-                            {
-                                if (tokens[1].Equals("x"))
-                                {
-                                    client1.whalePositionX = float.Parse(tokens[2]);
-                                }
-                                else if (tokens[1].Equals("y"))
-                                {
-                                    client1.whalePositionY = float.Parse(tokens[2]);
-                                }
-
-                                client2.sw.WriteLine("position\\1\\" + tokens[1] + "\\" + tokens[2]);
-                            }
-
-                            else if (tokens[0].Equals("score"))
-                            {
-                                client1.sw.WriteLine("score\\" + tokens[1]);
-                                client2.sw.WriteLine("score\\" + tokens[1]);
-                            }
-
-                            else if (tokens[0].Equals("lag"))
-                            {
-                                DateTime dt = NTPTime.getNTPTime(ref uniClock);
-                                dt.AddMinutes(uniClock.Elapsed.Minutes);
-                                dt.AddSeconds(uniClock.Elapsed.Seconds);
-                                dt.AddMilliseconds(uniClock.ElapsedMilliseconds);
-
-                                long ticks = dt.Ticks;
-
-                                client1.sw.WriteLine("lag\\" + ticks);
-                            }
-                            else
-                            {
-                                //do nothing
-                            }
-
-                        }
-
-                        if (client2.commandQueue.Count > 0)
-                        {
-                            string command = client2.commandQueue.Dequeue();
-
-                            string[] tokens = command.Split(new string[] { "\\" }, StringSplitOptions.None);
-
-                            if (tokens[0].Equals("play"))
-                            {
-                                client2.clientReady = true;
-                            }
-
-                            else if (tokens[0].Equals("velocity"))
-                            {
-                                if (tokens[1].Equals("x"))
-                                {
-                                    client2.xVelocity = float.Parse(tokens[2]);
-                                }
-                                else
-                                {
-                                    client2.yVelocity = float.Parse(tokens[2]);
-                                }
-
-                                client1.sw.WriteLine("velocity\\2\\" + tokens[1] + "\\" + tokens[2]);
-
-                                /*
-                                client3.sw.WriteLine("Velocity\\1\\" + tokens[1] + "\\" + tokens[2]);
-                                client4.sw.WriteLine("Velocity\\1\\" + tokens[1] + "\\" + tokens[2]);
-                                 */
-                            }
-
-                            else if (tokens[0].Equals("position"))
-                            {
-                                if (tokens[1].Equals("x"))
-                                {
-                                    client2.whalePositionX = float.Parse(tokens[2]);
-                                }
-                                else if (tokens[1].Equals("y"))
-                                {
-                                    client2.whalePositionY = float.Parse(tokens[2]);
-                                }
-
-                                client1.sw.WriteLine("position\\2\\" + tokens[1] + "\\" + tokens[2]);
-                            }
-
-                            else if (tokens[0].Equals("score"))
-                            {
-                                client1.sw.WriteLine("score\\" + tokens[1]);
-                                client2.sw.WriteLine("score\\" + tokens[1]);
-                            }
-                            else if (tokens[0].Equals("lag"))
-                            {
-                                DateTime dt = NTPTime.getNTPTime(ref uniClock);
-                                dt.AddMinutes(uniClock.Elapsed.Minutes);
-                                dt.AddSeconds(uniClock.Elapsed.Seconds);
-                                dt.AddMilliseconds(uniClock.ElapsedMilliseconds);
-
-                                long ticks = dt.Ticks;
-
-                                client2.sw.WriteLine("lag\\" + ticks);
-                            }
-                            else
-                            {
-                                //do nothing
-                            }
-                        }
-                    }
+                   catch (Exception e)
+                   {
+                       //Console.WriteLine(e.Message);
+                   }
                 }
+
             }
         }
 
@@ -328,7 +341,8 @@ namespace SwarchServer
             public float xVelocity = 0;
             public float yVelocity = 0;
 
-            public bool clientReady;
+            public bool clientReady = false;
+            public bool spawned = false;
 
             public Client(NetworkStream nws, StreamReader sr, StreamWriter sw, int clientNumber)
             {
@@ -350,10 +364,13 @@ namespace SwarchServer
 
             public void Service()
             {
+
                 try
                 {
                     while (true)
                     {
+                        
+
                         string data = sr.ReadLine();
 
                         lock (commandQueue)
