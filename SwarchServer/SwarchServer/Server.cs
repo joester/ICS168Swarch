@@ -15,7 +15,7 @@ namespace SwarchServer
     class Server
     {
 
-		SQLiteConnection swarchDatabase;
+		public SQLiteConnection swarchDatabase;
 		string name, password; 
 
 
@@ -38,10 +38,15 @@ namespace SwarchServer
 
         public Server()
         {
+
 			createSwarchDatabase();
 			connectToDatabase();
 			createTable();
 			fillPlayerTable();
+			printTable ();
+			//insertIntoPlayer ("toto", "39ec785d60sssa1b23bfda9944b9138bbcf");
+			Console.WriteLine ();
+			printTable ();
 
 
 
@@ -72,6 +77,50 @@ namespace SwarchServer
 			string sql = "create table playerInfo (name varchar(20), password varchar(50))";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
 			command.ExecuteNonQuery();
+		}
+
+		public void printTable()
+		{
+			string sql = "select * from playerInfo";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			SQLiteDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+				Console.WriteLine("Name: " + reader["name"] + "\tpassword: " + reader["password"]);
+
+
+
+		}
+
+		public void insertIntoPlayer(string name, string password)
+		{
+			string sql = "select * from playerInfo where name =:name";
+			SQLiteCommand command = new SQLiteCommand (sql, swarchDatabase);
+			command.Parameters.AddWithValue (":name", name);
+			SQLiteDataReader dataReader = command.ExecuteReader ();
+
+			// if the name is in the database
+
+			if (dataReader.Read ()) {
+				Console.WriteLine ("found: " + name);
+				if (password.Equals(dataReader ["password"])) {
+					Console.WriteLine ("you have entered the correct password");
+				} else {
+					Console.WriteLine ("Invalid passowrd");
+				}
+			} 
+			else {
+				sql = "insert into playerInfo (name, password) values(@param1, @param2)";
+				command = new SQLiteCommand (sql, swarchDatabase);
+				command.Parameters.Add (new SQLiteParameter ("@param1", name));
+				command.Parameters.Add (new SQLiteParameter ("@param2", password));
+				command.ExecuteNonQuery ();
+
+			}
+
+
+
+
+			
 		}
 
 		// Inserts some values in the highscores table.
