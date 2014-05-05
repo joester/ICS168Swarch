@@ -1,8 +1,9 @@
-//AFSHIN MAHINI 2013 - 2014
-
 using UnityEngine;
 using System.Collections;
 using System.IO;
+using System;
+using System.Security.Cryptography;
+using System.Text;
 
 public class LoginScreenGUI : MonoBehaviour {	
 	
@@ -36,9 +37,28 @@ public class LoginScreenGUI : MonoBehaviour {
 		if (connected)
 			if(GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 20, 50, 20), "Login"))
 			{
-				GameObject gp = (GameObject)Resources.Load ("GameProcess", typeof(GameObject));
-				gp.GetComponent<GameProcess>().playerName = userName;
-				Application.LoadLevel(1);
+				string source = password;
+				string hash;
+				using (MD5 md5Hash = MD5.Create())
+				{
+					hash = GetMd5Hash(md5Hash, source);
+					
+					Console.WriteLine("The MD5 hash of " + source + " is: " + hash + ".");
+					
+					Console.WriteLine("Verifying the hash...");
+					
+					if (VerifyMd5Hash(md5Hash, source, hash))
+					{
+						Console.WriteLine("The hashes are the same.");
+					}
+					else
+					{
+						Console.WriteLine("The hashes are not same.");
+					}
+				}
+
+				process.returnSocket().SendTCPPacket("username\\" + userName);
+				process.returnSocket().SendTCPPacket("password\\" + hash);
 			}
 
 		if (!connected)
@@ -115,6 +135,20 @@ public class LoginScreenGUI : MonoBehaviour {
 		
 		//GUI.Label ( new Rect ( 500, 330, 100, 20 ) , "Latency : " + process.returnSocket().returnLatency()  );
 		
+	}
+
+	public void loginFailed()
+	{
+		userName = "";
+		password = "";
+		guiText.text = "Invalid Login Info. Try Again.";
+	}
+
+	public void loginSucceed(String usernameToDisplay)
+	{
+		process.playerName = usernameToDisplay;
+		DontDestroyOnLoad(process);
+		Application.LoadLevel(1);
 	}
 
 	public void resetGuiText()
