@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Player2Script : MonoBehaviour {
+public class Player3Script : MonoBehaviour {
 	
 	public float xVelocity;
 	public float yVelocity;	
@@ -9,23 +9,29 @@ public class Player2Script : MonoBehaviour {
 	public float lastXPosition;
 	public float currentYPosition;
 	public float lastYPosition;
-	public float threshold;
-
+	
 	public float currentXVelocity;
 	public float lastXVelocity;
 	public float currentYVelocity;
 	public float lastYVelocity;
+	public float threshold;
 	
 	public float weight;
-
+	
 	public GameProcess gp;
 	
 	// Use this for initialization
 	void Start () {
 		xVelocity = 0;
 		yVelocity = 0;		
-		currentXPosition = 2.5f;
-		lastXPosition = 2.5f;
+		currentXPosition = -2.5f;
+		lastXPosition = -2.5f;
+		
+		currentXVelocity = 0.0f;
+		lastXVelocity = 0.0f;
+		
+		currentYVelocity = 0.0f;
+		lastYVelocity = 0.0f;
 		
 		currentYPosition = 0f;
 		lastYPosition = 0f;
@@ -33,15 +39,13 @@ public class Player2Script : MonoBehaviour {
 		threshold = 0.05f;
 		weight = 1;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
-
-		
 		StartCoroutine ( SendDelay() );
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		
-		if (gp.clientNumber == 2)
+		if (gp.clientNumber == 3)
 		{
 			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
 				yVelocity = 0.1f;
@@ -62,7 +66,7 @@ public class Player2Script : MonoBehaviour {
 			if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D) ||
 			    Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
 				xVelocity = 0.0f;
-
+			
 			currentXVelocity = xVelocity;
 			currentYVelocity = yVelocity;
 			
@@ -86,7 +90,8 @@ public class Player2Script : MonoBehaviour {
 		{
 			transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
 			currentXPosition = transform.position.x;
-			currentYPosition = transform.position.y;		
+			currentYPosition = transform.position.y;
+			
 		}
 	}
 	
@@ -98,7 +103,7 @@ public class Player2Script : MonoBehaviour {
 			
 			yield return new WaitForSeconds ( delay ) ;
 			
-			if (gp.clientNumber == 2)
+			if (gp.clientNumber == 3)
 			{
 				if (Mathf.Abs(currentXPosition - lastXPosition) >= threshold)
 				{				
@@ -110,36 +115,41 @@ public class Player2Script : MonoBehaviour {
 				{
 					lastYPosition = currentYPosition;
 					gp.returnSocket().SendTCPPacket("position\\y\\" + currentYPosition);
-				}	
+				}
 			}
+			
 		}
 	}
 	
-	void OnCollisionEnter2D(Collision2D coll)
-	{
-		if (coll.gameObject.name.Equals("Player1"))
-		{
-			if (weight > coll.gameObject.GetComponent<Player1Script>().weight)
-			{
-				coll.gameObject.GetComponent<Player1Script>().reset();
-				float enemyWeight = coll.gameObject.GetComponent<Player1Script>().weight;
-				weight += enemyWeight;
-				
-				Vector3 values = transform.localScale;
-
-				transform.localScale = 
-					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
-
-				coll.gameObject.GetComponent<Player1Script>().reset();
-			}
-			
-			else if (weight == coll.gameObject.GetComponent<Player1Script>().weight)
-			{
-				reset();
-				coll.gameObject.GetComponent<Player1Script>().reset();
-			}
-		}
-	}
+//	void OnCollisionEnter2D(Collision2D coll)
+//	{
+//		Debug.Log(coll.gameObject.name);
+//		
+//		if (coll.gameObject.name.Equals("Player2"))
+//		{
+//			if (weight > coll.gameObject.GetComponent<Player2Script>().weight)
+//			{
+//				Debug.Log(weight + " " + coll.gameObject.GetComponent<Player2Script>().weight);
+//				
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//				float enemyWeight = coll.gameObject.GetComponent<Player2Script>().weight;
+//				weight += enemyWeight;
+//				
+//				Vector3 values = transform.localScale;
+//				
+//				transform.localScale = 
+//					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
+//				
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//			}
+//			
+//			else if (weight == coll.gameObject.GetComponent<Player2Script>().weight)
+//			{
+//				reset();
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//			}
+//		}
+//	}
 	
 	public void reset()
 	{

@@ -9,6 +9,11 @@ public class Player1Script : MonoBehaviour {
 	public float lastXPosition;
 	public float currentYPosition;
 	public float lastYPosition;
+
+	public float currentXVelocity;
+	public float lastXVelocity;
+	public float currentYVelocity;
+	public float lastYVelocity;
 	public float threshold;
 
 	public float weight;
@@ -22,10 +27,16 @@ public class Player1Script : MonoBehaviour {
 		currentXPosition = -2.5f;
 		lastXPosition = -2.5f;
 
+		currentXVelocity = 0.0f;
+		lastXVelocity = 0.0f;
+
+		currentYVelocity = 0.0f;
+		lastYVelocity = 0.0f;
+
 		currentYPosition = 0f;
 		lastYPosition = 0f;
 
-		threshold = 0.2f;
+		threshold = 0.05f;
 		weight = 1;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
 		StartCoroutine ( SendDelay() );
@@ -55,12 +66,27 @@ public class Player1Script : MonoBehaviour {
 			if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D) ||
 			    Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
 				xVelocity = 0.0f;
+
+			currentXVelocity = xVelocity;
+			currentYVelocity = yVelocity;
+
+			if (currentXVelocity != lastXVelocity)
+			{
+				gp.returnSocket().SendTCPPacket("velocity\\x\\"+currentXVelocity);
+				lastXVelocity = currentXVelocity;
+			}
+
+			if (currentYVelocity != lastYVelocity)
+			{
+				gp.returnSocket().SendTCPPacket("velocity\\y\\"+currentYVelocity);
+				lastYVelocity = currentYVelocity;
+			}
 		}
 	}
 
 	void FixedUpdate()
 	{
-		if (gp.clientNumber == 1 && gp.play)
+		if (gp.play)
 		{
 			transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
 			currentXPosition = transform.position.x;
@@ -73,22 +99,22 @@ public class Player1Script : MonoBehaviour {
 		
 		while ( true )
 		{
-			float delay = 0.5f;
+			float delay = 0.0f;
 			
 			yield return new WaitForSeconds ( delay ) ;
 
 			if (gp.clientNumber == 1)
 			{
 				if (Mathf.Abs(currentXPosition - lastXPosition) >= threshold)
-				{				
+				{				 
 					lastXPosition = currentXPosition;
-					//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
+					gp.returnSocket().SendTCPPacket("position\\x\\" + currentXPosition);
 				}
 
 				if (Mathf.Abs(currentYPosition - lastYPosition) >= threshold)
 				{
 					lastYPosition = currentYPosition;
-					//gp.returnSocket().SendTCPPacket("paddle\\" + 2 + "\\" + currentPosition + "\\" + delay);
+					gp.returnSocket().SendTCPPacket("position\\y\\" + currentYPosition);
 				}
 			}
 			

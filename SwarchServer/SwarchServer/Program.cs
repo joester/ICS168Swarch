@@ -11,8 +11,12 @@ namespace SwarchServer
         static void Main(string[] args)
         {
             Server server = new Server();
+<<<<<<< HEAD
 			server.Listen();
 
+=======
+            server.listenerThead.Start();
+>>>>>>> FETCH_HEAD
         }
     }
 }
