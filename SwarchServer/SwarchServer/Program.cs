@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 
 namespace SwarchServer
 {
@@ -11,12 +11,8 @@ namespace SwarchServer
         static void Main(string[] args)
         {
             Server server = new Server();
-<<<<<<< HEAD
 			server.Listen();
-
-=======
             server.listenerThead.Start();
->>>>>>> FETCH_HEAD
         }
     }
 }
