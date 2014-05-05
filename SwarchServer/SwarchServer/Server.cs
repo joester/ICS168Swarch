@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
@@ -14,7 +14,7 @@ namespace SwarchServer
     class Server
     {
 
-		public SQLiteConnection swarchDatabase;
+		public static SQLiteConnection swarchDatabase;
 		string name, password; 
 
 
@@ -41,27 +41,15 @@ namespace SwarchServer
 
         public Server()
         {
-<<<<<<< HEAD
-
+            //clearTable();
 			createSwarchDatabase();
 			connectToDatabase();
-			createTable();
-			fillPlayerTable();
-			printTable ();
-			//insertIntoPlayer ("toto", "39ec785d60sssa1b23bfda9944b9138bbcf");
-			Console.WriteLine ();
-			printTable ();
-
-
-
-=======
-			//createSwarchDatabase();
-			//connectToDatabase();
 			//createTable();
 			//fillPlayerTable();
->>>>>>> FETCH_HEAD
+			printTable ();
+			//insertIntoPlayer ("toto", "39ec785d60sssa1b23bfda9944b9138bbcf");           
 
-            maxPlayers = 4;
+            maxPlayers = 4; 
             minPlayers = 2;
             numberOfClients = 0;
             listener = new TcpListener(4185);
@@ -96,7 +84,7 @@ namespace SwarchServer
 		// Creates a connection with our database file.
 		void connectToDatabase()
 		{
-			swarchDatabase = new SQLiteConnection("Data Source=SwarchDatabase.sqlite;Version=3;");
+			swarchDatabase = new SQLiteConnection("Data Source=SwarchDatabase.db;Version=3;");
 			swarchDatabase.Open();
 		}
 
@@ -108,19 +96,50 @@ namespace SwarchServer
 			command.ExecuteNonQuery();
 		}
 
-		public void printTable()
+        public void clearTable()
+        {
+            string sql = "DELETE FROM playerInfo";
+            SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+            SQLiteDataReader reader = command.ExecuteReader();
+        }
+
+		public static void printTable()
 		{
 			string sql = "select * from playerInfo";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
 			SQLiteDataReader reader = command.ExecuteReader();
 			while (reader.Read())
 				Console.WriteLine("Name: " + reader["name"] + "\tpassword: " + reader["password"]);
-
-
-
 		}
 
-		public void insertIntoPlayer(string name, string password)
+        public static bool existsInTable(String name)
+        {
+            string sql = "SELECT count(*) FROM playerInfo WHERE name=:Name";
+            SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+            command.Parameters.AddWithValue(":Name", name);
+            int count = Convert.ToInt32(command.ExecuteScalar());
+
+            return (count != 0);
+        }
+
+        public static string getUserPassword(String name)
+        {
+            string sql = "select password from playerInfo where name=" + "'" + name + "'";
+            SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+            SQLiteDataReader reader = command.ExecuteReader();
+            return reader["password"].ToString();
+        }
+
+        public void getTableEntry(String name)
+        {
+            string sql = "select * from playerInfo where name=" + "'" + name + "'";
+            SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+            SQLiteDataReader reader = command.ExecuteReader();
+            Console.WriteLine(reader["name"] + " : " + reader["password"]);
+            
+        }
+
+		public static void insertIntoPlayer(string name, string password)
 		{
 			string sql = "select * from playerInfo where name =:name";
 			SQLiteCommand command = new SQLiteCommand (sql, swarchDatabase);
@@ -145,12 +164,10 @@ namespace SwarchServer
 				command.ExecuteNonQuery ();
 
 			}
-
-
-
-
 			
 		}
+
+
 
 		// Inserts some values in the highscores table.
 		// As you can see, there is quite some duplicate code here, we'll solve this in part two.
@@ -294,7 +311,8 @@ namespace SwarchServer
                                    client.clientReady = true;
                                    Console.WriteLine("client " + client.clientNumber + " is ready");
 
-
+                                   //let all other players that have connected know that most recent client has connected
+                                   //tell this client know about all the clients that have connected
                                    foreach (Client c in clientArray)
                                    {
                                        c.sw.WriteLine("connected\\" + client.clientNumber);
@@ -310,6 +328,36 @@ namespace SwarchServer
                                    client.spawned = true;
                                }
 
+                               //
+                               if (tokens[0].Equals("userInfo"))
+                               {
+                                    if (existsInTable(tokens[1]))
+                                    {
+                                        if (tokens[2].Equals(getUserPassword(tokens[1])))
+                                        {
+                                            client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+                                            Console.WriteLine(tokens[1] + " has logged in");
+                                        }
+                                        else
+                                        {
+                                            client.sw.WriteLine("loginFail");
+                                            Console.WriteLine(tokens[1] + " entered incorrect password");
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        insertIntoPlayer(tokens[1], tokens[2]);
+                                        client.sw.WriteLine("accountCreated");
+                                        printTable();
+                                    }
+                                 
+                               }
+
+                               
+
+                                //if the velocity of a client has changed, they send it to the server
+                                //the server broadcasts this velocity to all other clients
                                else if (tokens[0].Equals("velocity"))
                                {
                                    if (tokens[1].Equals("x"))
