@@ -2,7 +2,8 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="SwarchServer/Server.cs">
     <Files>
-      <File FileName="SwarchServer/Server.cs" Line="77" Column="56" />
+      <File FileName="../Swarch/Assets/LoginScreenGUI.cs" Line="1" Column="1" />
+      <File FileName="SwarchServer/Server.cs" Line="350" Column="43" />
       <File FileName="SwarchServer/Program.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

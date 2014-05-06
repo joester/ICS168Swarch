@@ -41,7 +41,7 @@ namespace SwarchServer
 
         public Server()
         {
-            //clearTable();
+			//clearTable();
 			createSwarchDatabase();
 			connectToDatabase();
 			//createTable();
