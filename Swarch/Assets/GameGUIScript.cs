@@ -17,11 +17,26 @@ public class GameGUIScript : MonoBehaviour {
 	void OnGUI () {
 		if(show)
 		{
-			if(GUI.Button(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 50, 20), "Start"))
+			if(GUI.Button(new Rect(Screen.width / 2 - 60, Screen.height / 2 - 75, 50, 20), "Start"))
 			{
 				gp.returnSocket().SendTCPPacket("play");
 
 				guiText.text = gp.clientNumber + "  - Waiting for other players to connect and press start.";
+			}
+
+			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 75, 100, 20), "Disconnect"))
+			{
+				//********* COMPLETE THE FOLLOWING CODE
+				//********* KILL THREAD AND SEVER CONNECTION
+				
+				//guiText.text = "Disconnected.";
+
+				DontDestroyOnLoad(gp);
+				Application.LoadLevel(0);
+
+				gp.returnSocket().t.Abort();
+				gp.returnSocket().endThread();
+				gp.returnSocket().Disconnect();
 			}
 		}
 	}

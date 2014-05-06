@@ -10,13 +10,13 @@ public class LoginScreenGUI : MonoBehaviour {
 
 	public double delTime;
 	public GUIText guiText;
-	public GUIText latencyText;
+	//public GUIText latencyText;
 	public string userName;
 	public string password;
 
 	public GameProcess process;	
 	private bool show;
-	private bool connected;
+	public bool connected;
 	public long latency;
 	
 	void Start () 
@@ -45,25 +45,24 @@ public class LoginScreenGUI : MonoBehaviour {
 					
 					Console.WriteLine("The MD5 hash of " + source + " is: " + hash + ".");
 					
-					Console.WriteLine("Verifying the hash...");
+					//Console.WriteLine("Verifying the hash...");
 					
-					if (VerifyMd5Hash(md5Hash, source, hash))
-					{
-						Console.WriteLine("The hashes are the same.");
-					}
-					else
-					{
-						Console.WriteLine("The hashes are not same.");
-					}
+//					if (VerifyMd5Hash(md5Hash, source, hash))
+//					{
+//						Console.WriteLine("The hashes are the same.");
+//					}
+//					else
+//					{
+//						Console.WriteLine("The hashes are not same.");
+//					}
 				}
 
-				process.returnSocket().SendTCPPacket("username\\" + userName);
-				process.returnSocket().SendTCPPacket("password\\" + hash);
+				process.returnSocket().SendTCPPacket("userInfo\\" + userName + "\\" + hash);
 			}
 
 		if (!connected)
 		{
-			if (GUI.Button (new Rect (Screen.width / 2, Screen.height / 2,100,20), "Connect")) 
+			if (GUI.Button (new Rect (Screen.width / 2, Screen.height / 2 - 20,100,20), "Connect")) 
 			{
 				guiText.text = "Connecting...";
 				if ( process.returnSocket().Connect() )
@@ -79,12 +78,12 @@ public class LoginScreenGUI : MonoBehaviour {
 
 		if (connected)
 		{
-			if (GUI.Button( new Rect(Screen.width / 2 - 50, Screen.height / 2 + 100, 100, 20), "Test Latency"))
-			{
-				process.returnSocket().SendTCPPacket("lag\\" + process.clientNumber.ToString());
-			}
+//			if (GUI.Button( new Rect(Screen.width / 2 - 50, Screen.height / 2 + 100, 100, 20), "Test Latency"))
+//			{
+//				process.returnSocket().SendTCPPacket("lag\\" + process.clientNumber.ToString());
+//			}
 
-			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2, 100, 20), "Disconnect"))
+			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 20, 100, 20), "Disconnect"))
 			{
 				//********* COMPLETE THE FOLLOWING CODE
 				//********* KILL THREAD AND SEVER CONNECTION
@@ -137,19 +136,40 @@ public class LoginScreenGUI : MonoBehaviour {
 		
 	}
 
-	public void loginFailed()
+	public void loginFail()
 	{
 		userName = "";
 		password = "";
 		guiText.text = "Invalid Login Info. Try Again.";
 	}
 
-	public void loginSucceed(String usernameToDisplay)
+	public void loginSucceed()
 	{
-		process.playerName = usernameToDisplay;
 		DontDestroyOnLoad(process);
 		Application.LoadLevel(1);
 	}
+
+	string GetMd5Hash(MD5 md5Hash, string input)
+	{
+		
+		// Convert the input string to a byte array and compute the hash. 
+		byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+		
+		// Create a new Stringbuilder to collect the bytes 
+		// and create a string.
+		StringBuilder sBuilder = new StringBuilder();
+		
+		// Loop through each byte of the hashed data  
+		// and format each one as a hexadecimal string. 
+		for (int i = 0; i < data.Length; i++)
+		{
+			sBuilder.Append(data[i].ToString("x2"));
+		}
+		
+		// Return the hexadecimal string. 
+		return sBuilder.ToString();
+	}
+
 
 	public void resetGuiText()
 	{

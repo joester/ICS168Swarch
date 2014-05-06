@@ -58,8 +58,24 @@ public class GameProcess : MonoBehaviour {
 			if(tokens[0].Equals("client"))
 			{
 				// "client\\clientNumber"
-				UnityEngine.Debug.Log(Int32.Parse(tokens[1]));
+				//UnityEngine.Debug.Log(Int32.Parse(tokens[1]));
 				clientNumber = Int32.Parse(tokens[1]);
+			}
+
+			else if (tokens[0].Equals("accountCreated"))
+			{
+				GameObject.Find("Login_GUI").GetComponent<LoginScreenGUI>().guiText.text = "Account Created.";
+			}
+
+			else if (tokens[0].Equals("loginFail"))
+			{
+				GameObject.Find("Login_GUI").GetComponent<LoginScreenGUI>().loginFail();
+			}
+
+			else if (tokens[0].Equals("loginSucceed"))
+			{
+				GameObject.Find("Login_GUI").GetComponent<LoginScreenGUI>().loginSucceed();
+				playerName = tokens[1];
 			}
 
 			else if (tokens[0].Equals("connected"))
@@ -216,6 +232,16 @@ public class GameProcess : MonoBehaviour {
 
 				GameObject.Find("LatencyText").guiText.text = latency.Milliseconds.ToString() + " ms";
 			}
+
+//			else
+//			{
+//				string packet = "Unrecognized packet: ";
+//				foreach (string i in tokens)
+//				{
+//					packet += "\\" + i;
+//				}
+//				UnityEngine.Debug.Log(packet);
+//			}
 
 //			else if (tokens[0].Equals("gameover"))
 //			{
