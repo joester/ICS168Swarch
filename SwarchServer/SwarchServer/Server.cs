@@ -227,7 +227,7 @@ namespace SwarchServer
                                     else
                                     {
 										dm.insertIntoPlayer(tokens[1], tokens[2]);
-                                        client.sw.WriteLine("accountCreated");
+										client.sw.WriteLine("loginSucceed\\" + tokens[1]);
 										dm.printTable();
                                     }
                                  
