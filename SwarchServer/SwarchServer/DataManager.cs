@@ -13,7 +13,7 @@ namespace SwarchServer
 			createSwarchDatabase ();
 			connectToDatabase ();
 			//createTables ();
-			printTable ();
+			printInfoTable ();
 		}
 
 		// Creates an empty database file
@@ -43,9 +43,9 @@ namespace SwarchServer
 			string sql = "create table playerInfo (name varchar(20), password varchar(50))";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
 			command.ExecuteNonQuery();
-			//			sql = "create table highScores (name varchar(20), score int)";
-			//			command = new SQLiteCommand (sql, swarchDatabase);
-			//			command.ExecuteNonQuery ();
+			sql = "create table highScores (name varchar(20), score int)";
+			command = new SQLiteCommand (sql, swarchDatabase);
+			command.ExecuteNonQuery ();
 		}
 
 		public void clearTable()
@@ -55,7 +55,7 @@ namespace SwarchServer
 			SQLiteDataReader reader = command.ExecuteReader();
 		}
 
-		public void printTable()
+		public void printInfoTable()
 		{
 			string sql = "select * from playerInfo";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
@@ -64,7 +64,7 @@ namespace SwarchServer
 				Console.WriteLine("Name: " + reader["name"] + "\tpassword: " + reader["password"]);
 		}
 
-		public bool existsInTable(String name)
+		public bool existsInInfoTable(String name)
 		{
 			string sql = "SELECT count(*) FROM playerInfo WHERE name=:Name";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
@@ -91,7 +91,7 @@ namespace SwarchServer
 
 		}
 
-		public void insertIntoPlayer(string name, string password)
+		public void insertIntoInfoTable(string name, string password)
 		{
 			string sql = "select * from playerInfo where name =:name";
 			SQLiteCommand command = new SQLiteCommand (sql, swarchDatabase);
@@ -116,6 +116,19 @@ namespace SwarchServer
 				command.ExecuteNonQuery ();
 
 			}
+
+		}
+
+		public void insertIntoHighscoresTable(string name, int weight)
+		{
+			string sql = "insert into highScores (name, score) values(@param1, @param2)";
+			SQLiteCommand command = new SQLiteCommand (sql, swarchDatabase);
+			command.Parameters.Add (new SQLiteParameter ("@param1", name));
+			command.Parameters.Add (new SQLiteParameter ("@param2", weight));
+			command.ExecuteNonQuery ();
+			sql = "SELECT * FROM `tablename` ORDER BY `columnname`";
+			command = new SQLiteCommand (sql, swarchDatabase);
+			command.ExecuteNonQuery ();
 
 		}
 

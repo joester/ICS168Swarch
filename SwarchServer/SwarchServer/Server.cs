@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Data.SQLite;
 
+
 namespace SwarchServer
 {
     class Server
@@ -16,7 +17,7 @@ namespace SwarchServer
 
 		public static SQLiteConnection swarchDatabase;
 		string name, password; 
-		DataManager dm;
+		public static DataManager dm;
 
 
         protected int maxPlayers;
@@ -25,6 +26,7 @@ namespace SwarchServer
         protected static TcpListener listener;
         protected static Socket[] socArray;
         protected static Client[] clientArray;
+		protected static List<String> loginNames;
 
         protected static Stopwatch uniClock;
 
@@ -49,6 +51,9 @@ namespace SwarchServer
             listener = new TcpListener(4185);
             socArray = new Socket[maxPlayers];
             clientArray = new Client[maxPlayers];
+			loginNames = new List<string> ();
+
+
 
             listenerThead = new Thread(new ThreadStart(this.Listen));
 
@@ -109,12 +114,11 @@ namespace SwarchServer
 
         public class ServerLoop
         {
-			DataManager dm;
-            public Thread loopThread;
+			public Thread loopThread;
 
             public ServerLoop()
             {
-				dm = new DataManager();
+
                 loopThread = new Thread(new ThreadStart(this.loop));
                 
                 uniClock.Start();
@@ -207,31 +211,46 @@ namespace SwarchServer
                                }
 
                                //
-                               if (tokens[0].Equals("userInfo"))
-                               {
 
-									if (dm.existsInTable(tokens[1]))
-                                    {
-										if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
-                                        {
-                                            client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-                                            Console.WriteLine(tokens[1] + " has logged in");
-                                        }
-                                        else
-                                        {
-                                            client.sw.WriteLine("loginFail");
-                                            Console.WriteLine(tokens[1] + " entered incorrect password");
-                                        }
-                                    }
 
-                                    else
-                                    {
-										dm.insertIntoPlayer(tokens[1], tokens[2]);
-										client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-										dm.printTable();
-                                    }
-                                 
-                               }
+								if (tokens[0].Equals("userInfo"))
+								{
+									if(!loginNames.Contains(tokens[0]))
+									{
+
+										if (dm.existsInInfoTable(tokens[1]))
+										{
+											if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
+											{
+												client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+												Console.WriteLine(tokens[1] + " has logged in");
+											}
+											else
+											{
+												client.sw.WriteLine("loginFail");
+												Console.WriteLine(tokens[1] + " entered incorrect password");
+											}
+										}
+
+										else
+										{
+											dm.insertIntoInfoTable(tokens[1], tokens[2]);
+											loginNames.Add(tokens[1]);
+											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+											dm.printInfoTable();
+										}
+
+
+									}
+									else
+									{
+										client.sw.WriteLine("exists\\" + tokens[1]);
+									}
+
+
+								}
+
+
 
                                
 
