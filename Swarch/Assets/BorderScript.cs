@@ -17,12 +17,12 @@ public class BorderScript : MonoBehaviour {
 	{
 		if (coll.gameObject.name.Equals("Player1"))
 		{
-			GameObject.Find ("Player1").GetComponent<Player1Script>().reset ();
+			//GameObject.Find ("Player1").GetComponent<Player1Script>().reset ();
 		}
 
 		else if (coll.gameObject.name.Equals("Player2"))
 		{
-			GameObject.Find ("Player2").GetComponent<Player2Script>().reset ();
+		//	GameObject.Find ("Player2").GetComponent<Player2Script>().reset ();
 		}
 
 		else

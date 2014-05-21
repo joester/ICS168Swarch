@@ -115,37 +115,37 @@ public class Player2Script : MonoBehaviour {
 		}
 	}
 	
-	void OnCollisionEnter2D(Collision2D coll)
-	{
-		if (coll.gameObject.name.Equals("Player1"))
-		{
-			if (weight > coll.gameObject.GetComponent<Player1Script>().weight)
-			{
-				coll.gameObject.GetComponent<Player1Script>().reset();
-				float enemyWeight = coll.gameObject.GetComponent<Player1Script>().weight;
-				weight += enemyWeight;
-				
-				Vector3 values = transform.localScale;
-
-				transform.localScale = 
-					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
-
-				coll.gameObject.GetComponent<Player1Script>().reset();
-			}
-			
-			else if (weight == coll.gameObject.GetComponent<Player1Script>().weight)
-			{
-				reset();
-				coll.gameObject.GetComponent<Player1Script>().reset();
-			}
-		}
-	}
+//	void OnCollisionEnter2D(Collision2D coll)
+//	{
+//		if (coll.gameObject.name.Equals("Player1"))
+//		{
+//			if (weight > coll.gameObject.GetComponent<Player1Script>().weight)
+//			{
+//				coll.gameObject.GetComponent<Player1Script>().reset();
+//				float enemyWeight = coll.gameObject.GetComponent<Player1Script>().weight;
+//				weight += enemyWeight;
+//				
+//				Vector3 values = transform.localScale;
+//
+//				transform.localScale = 
+//					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
+//
+//				coll.gameObject.GetComponent<Player1Script>().reset();
+//			}
+//			
+//			else if (weight == coll.gameObject.GetComponent<Player1Script>().weight)
+//			{
+//				reset();
+//				coll.gameObject.GetComponent<Player1Script>().reset();
+//			}
+//		}
+//	}
 	
-	public void reset()
-	{
-		weight = 1;
-		transform.position = new Vector3(Random.Range(-4f,4f), Random.Range(-4f,4f), 0);
-		transform.localScale = new Vector3(3f, 3f, 1f);
-	}
+//	public void reset()
+//	{
+//		weight = 1;
+//		transform.position = new Vector3(Random.Range(-4f,4f), Random.Range(-4f,4f), 0);
+//		transform.localScale = new Vector3(3f, 3f, 1f);
+//	}
 }
 

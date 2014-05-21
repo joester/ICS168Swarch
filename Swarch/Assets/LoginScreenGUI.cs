@@ -31,73 +31,84 @@ public class LoginScreenGUI : MonoBehaviour {
 	
 	void OnGUI () {
 
+
+		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 25);
+		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 25);
+	
 		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 30);
 		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 30);
 
-		if (connected)
 			if(GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 20, 50, 20), "Login"))
 			{
-				string source = password;
-				string hash;
-				using (MD5 md5Hash = MD5.Create())
+				if(!connected)
 				{
-					hash = GetMd5Hash(md5Hash, source);
-					
-					Console.WriteLine("The MD5 hash of " + source + " is: " + hash + ".");
-					
-					//Console.WriteLine("Verifying the hash...");
-					
-//					if (VerifyMd5Hash(md5Hash, source, hash))
-//					{
-//						Console.WriteLine("The hashes are the same.");
-//					}
-//					else
-//					{
-//						Console.WriteLine("The hashes are not same.");
-//					}
+					guiText.text = "Connecting...";
+					if ( process.returnSocket().Connect() )
+					{						
+						//show = !show;
+						guiText.text = "Connect Succeeded";	
+						connected = true;
+					}
+
+					else 
+						guiText.text = "Connect Failed";
 				}
-
-				process.returnSocket().SendTCPPacket("userInfo\\" + userName + "\\" + hash);
-			}
-
-		if (!connected)
-		{
-			if (GUI.Button (new Rect (Screen.width / 2, Screen.height / 2 - 20,100,20), "Connect")) 
-			{
-				guiText.text = "Connecting...";
-				if ( process.returnSocket().Connect() )
-				{						
-					//show = !show;
-					guiText.text = "Connect Succeeded";	
-					connected = true;
+					//connect code
+					string source = password;
+					string hash;
+					using (MD5 md5Hash = MD5.Create())
+					{
+						hash = GetMd5Hash(md5Hash, source);
+						
+						Console.WriteLine("The MD5 hash of " + source + " is: " + hash + ".");
+						
+						
+						
+						process.returnSocket().SendTCPPacket("userInfo\\" + userName + "\\" + hash);
+					}
 				}
 				
-				else guiText.text = "Connect Failed";
-			}
-		}	
+			
+		
 
-		if (connected)
-		{
-//			if (GUI.Button( new Rect(Screen.width / 2 - 50, Screen.height / 2 + 100, 100, 20), "Test Latency"))
+//		if (!connected)
+//		{
+//			if (GUI.Button (new Rect (Screen.width / 2, Screen.height / 2 - 20,100,20), "Connect")) 
 //			{
-//				process.returnSocket().SendTCPPacket("lag\\" + process.clientNumber.ToString());
+//				guiText.text = "Connecting...";
+//				if ( process.returnSocket().Connect() )
+//				{						
+//					//show = !show;
+//					guiText.text = "Connect Succeeded";	
+//					connected = true;
+//				}
+//				
+//				else guiText.text = "Connect Failed";
 //			}
+//		}	
 
-			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 20, 100, 20), "Disconnect"))
-			{
-				//********* COMPLETE THE FOLLOWING CODE
-				//********* KILL THREAD AND SEVER CONNECTION
-
-				guiText.text = "Disconnected.";
-				//show = !show;
-
-				connected = false;
-
-				process.returnSocket().t.Abort();
-				process.returnSocket().endThread();
-				process.returnSocket().Disconnect();
-			}
-		}
+//		if (connected)
+//		{
+////			if (GUI.Button( new Rect(Screen.width / 2 - 50, Screen.height / 2 + 100, 100, 20), "Test Latency"))
+////			{
+////				process.returnSocket().SendTCPPacket("lag\\" + process.clientNumber.ToString());
+////			}
+//
+//			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 20, 100, 20), "Disconnect"))
+//			{
+//				//********* COMPLETE THE FOLLOWING CODE
+//				//********* KILL THREAD AND SEVER CONNECTION
+//
+//				guiText.text = "Disconnected.";
+//				//show = !show;
+//
+//				connected = false;
+//
+//				process.returnSocket().t.Abort();
+//				process.returnSocket().endThread();
+//				process.returnSocket().Disconnect();
+//			}
+//		}
 		
 	
 //		if (show && !process.play && !resetGame)

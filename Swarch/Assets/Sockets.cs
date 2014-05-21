@@ -15,7 +15,11 @@ public class Sockets {
 
     //const string SERVER_LOCATION = "128.195.11.128"; 
 	//const string SERVER_LOCATION = "169.234.22.64"; 
+<<<<<<< HEAD
 	const string SERVER_LOCATION = "169.234.86.178";
+=======
+	const string SERVER_LOCATION = "169.234.46.45";
+>>>>>>> FETCH_HEAD
 	//const string SERVER_LOCATION = "169.234.46.36";
     const int SERVER_PORT = 4185; //FILL THESE OUT FOR YOUR OWN SERVER
 	
