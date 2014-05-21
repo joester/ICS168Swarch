@@ -31,16 +31,13 @@ public class LoginScreenGUI : MonoBehaviour {
 	
 	void OnGUI () {
 
-<<<<<<< HEAD
+
 		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 25);
 		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 25);
 	
-=======
 		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 30);
 		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 30);
 
-		if (connected)
->>>>>>> ff56d7173c230760c2b44487e42e5f7ee72a1014
 			if(GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 20, 50, 20), "Login"))
 			{
 				if(!connected)
