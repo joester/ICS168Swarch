@@ -8,6 +8,8 @@ public class PelletScript : MonoBehaviour {
 	float scaleModifier;
 	private bool isQuitting;
 
+	public int id = -1;
+
 	// Use this for initialization
 	void Start () {
 		weight = .5f;
@@ -22,37 +24,25 @@ public class PelletScript : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D coll)
 	{
-		if (coll.gameObject.name.Equals("Player1"))
-		{
-			GameObject.Find ("Player1").GetComponent<Player1Script>().weight += weight;
-		}
-
-		else if (coll.gameObject.name.Equals("Player2"))
-		{
-			GameObject.Find ("Player2").GetComponent<Player2Script>().weight += weight;
-		}
-
-		else
-			Debug.Log("pellet collision error!");
-
-		Vector3 values = coll.gameObject.transform.localScale;
-		coll.gameObject.transform.localScale = 
-			new Vector3(values.x + weight * scaleModifier, values.y + weight * scaleModifier, 1);	
-		GameObject.Destroy(this.gameObject);
+//		if (coll.gameObject.name.Equals("Player1"))
+//		{
+//			GameObject.Find ("Player1").GetComponent<Player1Script>().weight += weight;
+//		}
+//
+//		else if (coll.gameObject.name.Equals("Player2"))
+//		{
+//			GameObject.Find ("Player2").GetComponent<Player2Script>().weight += weight;
+//		}
+//
+//		else
+//			Debug.Log("pellet collision error!");
+//
+//		Vector3 values = coll.gameObject.transform.localScale;
+//		coll.gameObject.transform.localScale = 
+//			new Vector3(values.x + weight * scaleModifier, values.y + weight * scaleModifier, 1);	
+//		GameObject.Destroy(this.gameObject);
 	}
-
-	void OnDestroy()
-	{
-		if(!isQuitting)
-			Instantiate((GameObject)Resources.Load("Pellet"), getRandomPosition(), transform.rotation);
-	}
-
-	Vector3 getRandomPosition()
-	{
-		//need to check for collision in advance
-		return new Vector3(Random.Range(-4.5f, 4.5f), Random.Range(-4.5f,4.5f), 0);
-	}
-
+	
 	void OnApplicationQuit()
 	{
 		isQuitting = true;

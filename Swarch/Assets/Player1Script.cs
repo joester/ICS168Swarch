@@ -22,6 +22,8 @@ public class Player1Script : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		//Debug.Log (this.GetComponent<SpriteRenderer>().bounds.min);
+		//Debug.Log (this.GetComponent<SpriteRenderer>().bounds.max);
 		xVelocity = 0;
 		yVelocity = 0;		
 		currentXPosition = -2.5f;
@@ -90,8 +92,7 @@ public class Player1Script : MonoBehaviour {
 		{
 			transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
 			currentXPosition = transform.position.x;
-			currentYPosition = transform.position.y;
-			
+			currentYPosition = transform.position.y;			
 		}
 	}
 
@@ -116,46 +117,45 @@ public class Player1Script : MonoBehaviour {
 					lastYPosition = currentYPosition;
 					gp.returnSocket().SendTCPPacket("position\\y\\" + currentYPosition);
 				}
-			}
-			
+			}			
 		}
 	}
 
-	void OnCollisionEnter2D(Collision2D coll)
-	{
-		Debug.Log(coll.gameObject.name);
-
-		if (coll.gameObject.name.Equals("Player2"))
-		{
-			if (weight > coll.gameObject.GetComponent<Player2Script>().weight)
-			{
-				Debug.Log(weight + " " + coll.gameObject.GetComponent<Player2Script>().weight);
-
-				coll.gameObject.GetComponent<Player2Script>().reset();
-				float enemyWeight = coll.gameObject.GetComponent<Player2Script>().weight;
-				weight += enemyWeight;
-
-				Vector3 values = transform.localScale;
-
-				transform.localScale = 
-					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
-
-				coll.gameObject.GetComponent<Player2Script>().reset();
-			}
-
-			else if (weight == coll.gameObject.GetComponent<Player2Script>().weight)
-			{
-				reset();
-				coll.gameObject.GetComponent<Player2Script>().reset();
-			}
-		}
-	}
-
-	public void reset()
-	{
-		weight = 1;
-		transform.position = new Vector3(Random.Range(-4f,4f), Random.Range(-4f,4f), 0);
-		transform.localScale = new Vector3(3f, 3f, 1f);
-	}
+//	void OnCollisionEnter2D(Collision2D coll)
+//	{
+//		Debug.Log(coll.gameObject.name);
+//
+//		if (coll.gameObject.name.Equals("Player2"))
+//		{
+//			if (weight > coll.gameObject.GetComponent<Player2Script>().weight)
+//			{
+//				Debug.Log(weight + " " + coll.gameObject.GetComponent<Player2Script>().weight);
+//
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//				float enemyWeight = coll.gameObject.GetComponent<Player2Script>().weight;
+//				weight += enemyWeight;
+//
+//				Vector3 values = transform.localScale;
+//
+//				transform.localScale = 
+//					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
+//
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//			}
+//
+//			else if (weight == coll.gameObject.GetComponent<Player2Script>().weight)
+//			{
+//				reset();
+//				coll.gameObject.GetComponent<Player2Script>().reset();
+//			}
+//		}
+//	}
+//
+//	public void reset()
+//	{
+//		weight = 1;
+//		transform.position = new Vector3(Random.Range(-4f,4f), Random.Range(-4f,4f), 0);
+//		transform.localScale = new Vector3(3f, 3f, 1f);
+//	}
 }
 
