@@ -197,6 +197,7 @@ namespace SwarchServer
                                    //tell this client know about all the clients that have connected
                                    foreach (Client c in clientArray)
                                    {
+
                                        c.sw.WriteLine("connected\\" + client.clientNumber);
 
                                        if ((c.clientReady || playing) && !client.spawned)
