@@ -1,0 +1,8 @@
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\bin\Debug\SwarchServer.exe.config
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\bin\Debug\SwarchServer.exe
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\bin\Debug\SwarchServer.pdb
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\obj\Debug\SwarchServer.csprojResolveAssemblyReference.cache
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\obj\Debug\SwarchServer.exe
+c:\users\tenor_000\documents\visual studio 2013\Projects\SwarchServer\SwarchServer\obj\Debug\SwarchServer.pdb
+C:\Users\tenor_000\Documents\Visual Studio 2013\Projects\SwarchServer\SwarchServer\bin\Debug\System.Data.SQLite.dll
+C:\Users\tenor_000\Documents\Visual Studio 2013\Projects\SwarchServer\SwarchServer\bin\Debug\System.Data.SQLite.xml
