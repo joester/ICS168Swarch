@@ -1,5 +1,3 @@
-		//AFSHIN MAHINI 2013 - 2014
-
 using UnityEngine;
 using System.Collections;
 using System.IO;
@@ -9,18 +7,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-
 public class Sockets {
-
-
-    //const string SERVER_LOCATION = "128.195.11.128"; 
-	//const string SERVER_LOCATION = "169.234.22.64"; 
-<<<<<<< HEAD
-	const string SERVER_LOCATION = "169.234.86.178";
-=======
-	const string SERVER_LOCATION = "169.234.46.45";
->>>>>>> FETCH_HEAD
-	//const string SERVER_LOCATION = "169.234.46.36";
+	
+	private string SERVER_LOCATION = "174.77.34.244 ";
     const int SERVER_PORT = 4185; //FILL THESE OUT FOR YOUR OWN SERVER
 	
 	public TcpClient client;
@@ -37,22 +26,29 @@ public class Sockets {
 	protected static bool threadState = false;
 	
 	public Queue recvBuffer;
-
 	
 	public Sockets()
 	{		
 		connected = false;
 		recvBuffer = new Queue();
-		
-		//uniClock = new Stopwatch();
-		//dt = NTPTime.getNTPTime ( dt, ref uniClock );
-		
 	}
-	
+
+	//sets the IP to a new IP as entered by the user
+	public void setIP(string newIP)
+	{
+		SERVER_LOCATION = newIP;
+	}
+
+	//returns the current IP
+	public string getIP()
+	{
+		return SERVER_LOCATION;
+	}
+
+	//connects the client to the server
 	public bool Connect ()
 	{
-		//********* COMPLETE THE FOLLOWING CODE
-		//********* ESTABLISH CONNECTION THEN MAKE THREAD TO READ BYTES FROM STREAM
+		//ESTABLISH CONNECTION THEN MAKE THREAD TO READ BYTES FROM STREAM
 		try
 		{
             client = new TcpClient(SERVER_LOCATION, SERVER_PORT);
@@ -65,6 +61,7 @@ public class Sockets {
 			sw = new StreamWriter(nws);
 			sw.AutoFlush = true;
 		}
+
 		catch ( Exception ex )
 		{
 			Console.WriteLine ( ex.Message + " : OnConnect");			
@@ -73,10 +70,10 @@ public class Sockets {
 		if ( client == null ) return false;
 		return client.Connected;
 	}
-	
+
+	//disconnects the client from the server gracefully
 	public bool Disconnect ()
-	{
-		//********* COMPLETE THE FOLLOWING CODE		
+	{			
 		try
 		{
             client.GetStream().Close();
@@ -90,10 +87,10 @@ public class Sockets {
 
 		return true;
 	}
-	
+
+	//the workhorse of the project, sends a string to the server
 	public void SendTCPPacket ( string toSend )
 	{
-		//********* COMPLETE THE FOLLOWING CODE
 		try
 		{
 			sw.WriteLine(toSend);
@@ -102,18 +99,8 @@ public class Sockets {
 		{
 			Console.WriteLine ( ex.Message + ": OnTCPPacket" );
 		}	
-	}
-	
-	public void measureLatency () //UN-NECESSARY
-	{
-	}
-	
-	public int returnLatency(){//UN-NECESSARY
-		//return latency;
-		return 0;
-	}
-	
-	
+	}	
+		
 	public void endThread(){
 		threadState = false;
 	}

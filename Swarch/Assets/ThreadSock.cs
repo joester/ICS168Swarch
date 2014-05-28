@@ -1,5 +1,3 @@
-//AFSHIN MAHINI 2013 - 2014
-
 using UnityEngine;
 using System;
 using System.Collections;
@@ -13,16 +11,15 @@ public class ThreadSock
 	private Sockets socks;
 
 	private StreamReader reader;
-	
-	//********* COMPLETE THE FOLLOWING CODE
+
 	public ThreadSock (NetworkStream nwsIn, Sockets inSocket)
 	{
         nws = nwsIn;
         socks = inSocket;
 		reader = new StreamReader(nws);
 	}
-	//********* COMPLETE THE FOLLOWING CODE
-	//********* READ THE STREAM, ADD TO QUEUE, BE THREAD SAFE
+
+	// READ THE STREAM, ADD TO QUEUE, BE THREAD SAFE
 	public void Service ()
 	{	
 		try
@@ -41,8 +38,6 @@ public class ThreadSock
 		{
 			Console.WriteLine ( ex.Message + " : Thread loop" );
 			
-		}
-		
-	}
-	
+		}		
+	}	
 }

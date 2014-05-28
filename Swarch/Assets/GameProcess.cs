@@ -6,29 +6,24 @@ using System.Diagnostics;
 public class GameProcess : MonoBehaviour {
 
 	//PUBLIC MEMBERS 
-	//public bool play;
 	public int clientNumber;
 	public string playerName;
 	GameObject Player1;
 	GameObject Player2;
-	public int winningClientNumber;
-	public int winningWeight;
-	int numStartingPellets;
 	public bool play;
+
+	public DateTime dT;
+	public Stopwatch uniClock;
 
 	//PRIVATE MEMBERS
 	private Sockets socks;
 	private string stringBuffer;
 	private string tempBuffer;
 
-	public DateTime dT;
-	public Stopwatch uniClock;
-
 	// Use this for initialization
 	void Start () {
 
 		uniClock = new Stopwatch();
-		winningWeight = 10;
 
 		//play = false;
 		socks = new Sockets();
@@ -36,11 +31,7 @@ public class GameProcess : MonoBehaviour {
 		Player1 = GameObject.Find("Player1");
 		Player2 = GameObject.Find ("Player2");
 
-		winningClientNumber = -1;
-		numStartingPellets = 5;
-
-		play = false;
-	
+		play = false;	
 	}
 	
 	// Update is called once per frame
@@ -52,7 +43,6 @@ public class GameProcess : MonoBehaviour {
 
 			//separate the string by its delimiter '\\' to parse the line's content
 			string[] tokens = stringBuffer.Split(new string[] {"\\"}, StringSplitOptions.None);
-
 
 			///////////////////// DEBUG - WRITE ALL COMMANDS RECEIVED /////////////////////////
 			String s = "";
@@ -83,6 +73,13 @@ public class GameProcess : MonoBehaviour {
 				playerName = tokens[1];
 			}
 
+			//alreadyLoggedIn\\username
+			else if (tokens[0].Equals("alreadyLoggedIn"))
+			{
+				GameObject.Find("Login_GUI").GetComponent<LoginScreenGUI>().guiText.text =
+					tokens[1] + " is already logged in!";
+			}
+
 			//connected\\clientNumberThatConnected
 			else if (tokens[0].Equals("connected"))
 			{
@@ -93,19 +90,24 @@ public class GameProcess : MonoBehaviour {
 				//UnityEngine.Debug.Log (clientNumber + " was told to spawn " + clientThatJustConnected);
 
 				//spawns a player avatar corresponding to the information from the packet (see above)
+				//also attaches a playerWeight GUIText to that player
 				switch (clientThatJustConnected)
 				{
 				case 1:
 					GameObject.Instantiate(Resources.Load ("Player1"), new Vector3(-2.5f,0f,0f), facingUp);
+					GameObject.Instantiate(Resources.Load ("Player1Weight"), new Vector3((-2.5f + 5f) / 10f,0f,0f), facingUp);
 					break;
 				case 2:
 					GameObject.Instantiate(Resources.Load ("Player2"), new Vector3(0f,2.5f,0f), facingUp);
+					GameObject.Instantiate(Resources.Load ("Player2Weight"), new Vector3(0f,(2.5f + 5f) / 10f,0f), facingUp);
 					break;
 				case 3:
 					GameObject.Instantiate(Resources.Load ("Player3"), new Vector3(2.5f,0f,0f), facingUp);
+					GameObject.Instantiate(Resources.Load ("Player3Weight"), new Vector3((2.5f + 5f) / 10f,0f,0f), facingUp);
 					break;
 				case 4:
 					GameObject.Instantiate(Resources.Load ("Player4"), new Vector3(0f,-2.5f,0f), facingUp);
+					GameObject.Instantiate(Resources.Load ("Player4Weight"), new Vector3(0f,(-2.5f + 5f) / 10f,0f), facingUp);
 					break;					
 				}
 			}
@@ -237,42 +239,55 @@ public class GameProcess : MonoBehaviour {
 					//...to find the pellet with matching ID from the packet
 					if (pellets[i].GetComponent<PelletScript>().id == pelletTargetID)
 					{
+						//To respawn the pellet: First destroy the pellet that got eaten...
 						GameObject.Destroy(pellets[i]);
+
+						//Then make a new pellet at the location received in the packet
 						GameObject newPellet = 
 							(GameObject)GameObject.Instantiate(Resources.Load("Pellet"),new Vector3(
 										Convert.ToSingle(tokens[1]), Convert.ToSingle(tokens[2]),0f),
 							            new Quaternion(0,0,0,1));
 
+						//set the ID of the newly spawned pellet to the ID that was received
 						newPellet.GetComponent<PelletScript>().id = Int32.Parse (tokens[3]);
+
+						//break from the loop as soon as the pellet is found
 						break;
-						//reposition the correct pellet and break from the loop
-						//pellets[i].transform.position = 
-						//	new Vector3(Convert.ToSingle(tokens[1]), Convert.ToSingle (tokens[2]),0f);
-					
 					}
 				}
 			}
 
+			//winningClient\\winningClientNumber
 			else if (tokens[0].Equals("winningClient"))
 			{
+				//set the text on screen to indicate to all players which client won
 				GameObject.Find("GameGUI").GetComponent<GameGUIScript>().guiText.text = "Player " + tokens[1] + " wins!";
+
+				//remove the ability of the players to move by setting the play variable to false
 				play = false;
+
+				//show the logout button to allow the player to logout and replay if desired
 				GameObject.Find("GameGUI").GetComponent<GameGUIScript>().showLogout = true;
 			}
 
-			//moves a specific player's avatar to its respective starting position
+			//moves a specific player's avatar to a random position and resets the scale to the default
 			//resetPlayer\\clientNumber
 			else if (tokens[0].Equals("resetPlayer"))
 			{
+				//reset the scale of the client's avatar to the default: Vector3(3,3,0)
 				GameObject.FindGameObjectWithTag("Player" + Int32.Parse(tokens[1])).transform.localScale = new Vector3 (3f, 3f, 0f);
 
+				//changes player 1's avatar to a new random location and resets the weight to 1
+				//Note: the weight is responsible for altering the velocity of the avatar
 				if(tokens[1].Equals("1"))
 				{
 					GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().weight = 1;
 					GameObject.FindGameObjectWithTag("Player1").transform.position = 
 						new Vector3(Convert.ToSingle(tokens[2]), Convert.ToSingle(tokens[3]), 0f);
 				}
-				
+
+				//changes player 2's avatar to a new random location and resets the weight to 1
+				//Note: the weight is responsible for altering the velocity of the avatar
 				else if(tokens[1].Equals("2"))
 				{
 					GameObject.FindGameObjectWithTag("Player2").GetComponent<Player2Script>().weight = 1;	
@@ -280,6 +295,8 @@ public class GameProcess : MonoBehaviour {
 						new Vector3(Convert.ToSingle(tokens[2]), Convert.ToSingle(tokens[3]), 0f);
 				}
 
+				//changes player 3's avatar to a new random location and resets the weight to 1
+				//Note: the weight is responsible for altering the velocity of the avatar
 				else if(tokens[1].Equals("3"))
 				{
 					GameObject.FindGameObjectWithTag("Player3").GetComponent<Player3Script>().weight = 1;	
@@ -287,6 +304,8 @@ public class GameProcess : MonoBehaviour {
 						new Vector3(Convert.ToSingle(tokens[2]), Convert.ToSingle(tokens[3]), 0f);
 				}
 
+				//changes player 4's avatar to a new random location and resets the weight to 1
+				//Note: the weight is responsible for altering the velocity of the avatar
 				else if(tokens[1].Equals("4"))
 				{
 					GameObject.FindGameObjectWithTag("Player4").GetComponent<Player1Script>().weight = 1;	
@@ -296,118 +315,76 @@ public class GameProcess : MonoBehaviour {
 			}
 
 			//update an avatar's weight (increasing scale and effectively decreasing speed)
+			//weight\\deltaWeight (the amount to add to current weight)
 			else if (tokens[0].Equals("weight"))
 			{
 				int delta;
 				Vector3 oldScale;
 
+				//determining which player's weight got altered...
 				switch (Int32.Parse (tokens[1]))
 				{
 					case 1:
+						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
+
+						//...then adding the new weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player1").GetComponent<Player1Script>().weight += delta;
+
+						//...then updating the scale accordingly
 						oldScale = GameObject.FindGameObjectWithTag ("Player1").transform.localScale;
 						GameObject.FindGameObjectWithTag ("Player1").transform.localScale = 
 							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
 						break;
 
 					case 2:
+						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
+
+						//...then adding the new weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().weight += delta;
+
+						//...then updating the scale accordingly
 						oldScale = GameObject.FindGameObjectWithTag ("Player2").transform.localScale;
 						GameObject.FindGameObjectWithTag ("Player2").transform.localScale = 
 							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
 						break;
-//				case 3:
-//					delta = Int32.Parse (tokens[2]);
-//					GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player1Script>().weight += delta;
-//					oldScale = GameObject.FindGameObjectWithTag ("Player3").transform.localScale;
-//					GameObject.FindGameObjectWithTag ("Player3").transform.localScale = 
-//						new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
-//					break;
-//				case 4:
-//					delta = Int32.Parse (tokens[2]);
-//					GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player1Script>().weight += delta;
-//					oldScale = GameObject.FindGameObjectWithTag ("Player4").transform.localScale;
-//					GameObject.FindGameObjectWithTag ("Player4").transform.localScale = 
-//						new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
-//					break;	
+					case 3:
+						//...and by how much...
+						delta = Int32.Parse (tokens[2]);
+
+						//...then adding the new weight to the old weight to update it...
+						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player1Script>().weight += delta;
+
+						//...then updating the scale accordingly
+						oldScale = GameObject.FindGameObjectWithTag ("Player3").transform.localScale;
+						GameObject.FindGameObjectWithTag ("Player3").transform.localScale = 
+							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
+						break;
+					case 4:
+						//...and by how much...
+						delta = Int32.Parse (tokens[2]);
+
+						//...then adding the new weight to the old weight to update it...
+						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player1Script>().weight += delta;
+
+						//...then updating the scale accordingly
+						oldScale = GameObject.FindGameObjectWithTag ("Player4").transform.localScale;
+						GameObject.FindGameObjectWithTag ("Player4").transform.localScale = 
+							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
+						break;	
 				}
 			}
 
-
-
-				// hit\\posX\\posY\\VelX\\VelY\\time
-//			else if (tokens[0].Equals("hit"))
-//			{
-//				float xPos = Convert.ToSingle(tokens[1]);
-//				float yPos = Convert.ToSingle(tokens[2]);
-//				float xVel = Convert.ToSingle(tokens[3]);
-//				float yVel = Convert.ToSingle(tokens[4]);
-//
-//				ball.GetComponent<BallScript>().xVelocity = xVel;
-//				ball.GetComponent<BallScript>().yVelocity = yVel;
-//
-//				dT = NTPTime.getNTPTime(ref uniClock);
-//				dT.AddMinutes(uniClock.Elapsed.Minutes);
-//				dT.AddSeconds(uniClock.Elapsed.Seconds);
-//				dT.AddMilliseconds(uniClock.Elapsed.Milliseconds);
-//
-//				long clientTime = dT.Ticks;
-//				long serverTime = Convert.ToInt64(tokens[5]);
-//
-//				long difference = clientTime - serverTime;
-//
-//				UnityEngine.Debug.Log ("Latency: " + difference);
-//
-//				TimeSpan latency = new TimeSpan(difference);
-//
-//				xPos += (latency.Milliseconds / 20) * xVel;
-//				yPos += (latency.Milliseconds / 20) * yVel;
-//
-//
-//				ball.transform.position = new Vector3(xPos, yPos, 0);
-//			}
-
-
-			// "start\\xVelocity\\yVelocity"
-
-
-//			else if(tokens[0].Equals("lag"))
-//			{
-//				dT = NTPTime.getNTPTime(ref uniClock);
-//				dT.AddMinutes(uniClock.Elapsed.Minutes);
-//				dT.AddSeconds(uniClock.Elapsed.Seconds);
-//				dT.AddMilliseconds(uniClock.Elapsed.Milliseconds);
-//
-//				long clientTime = dT.Ticks;
-//				long serverTime = Convert.ToInt64(tokens[1]);
-//				
-//				long difference = clientTime - serverTime;
-//
-//				TimeSpan latency = new TimeSpan(difference);
-//
-//				GameObject.Find("LatencyText").guiText.text = latency.Milliseconds.ToString() + " ms";
-//			}
-
-//			else
-//			{
-//				string packet = "Unrecognized packet: ";
-//				foreach (string i in tokens)
-//				{
-//					packet += "\\" + i;
-//				}
-//				UnityEngine.Debug.Log(packet);
-//			}
-
-//			else if (tokens[0].Equals("gameover"))
-//			{
-//				UnityEngine.Debug.Log ("received");
-//				GameObject.Find ("GUI").GetComponent<Gui>().resetGame = true;
-//				winningClientNumber = Int32.Parse(tokens[1]);
-//			}
-//		}
-//	}
+			else
+			{
+				string packet = "Unrecognized packet: ";
+				foreach (string i in tokens)
+				{
+					packet += "\\" + i;
+				}
+				UnityEngine.Debug.Log(packet);
+			}
 		}
 	}
 
