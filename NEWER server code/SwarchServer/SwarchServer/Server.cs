@@ -177,14 +177,55 @@ namespace SwarchServer
 
             }
 
+
+            //if the game has already started we do not need to check if the clients are ready
+            //simply tell the client that has just connected the game info
+            public void loadGameState(Client client)
+            {
+                //tell all the clients the follow:
+                //who is in the game
+                //the correct positions and velocities of the clients in the game...
+                for (int i = 0; i < numberOfClients; i++)
+                {
+                    Client c = clientArray[i];
+
+                    client.sw.WriteLine("connected\\" + c.clientNumber);
+                    client.sw.WriteLine("position\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
+                    client.sw.WriteLine("veloctiy\\" + c.clientNumber + "\\" + c.xVelocity + "\\" + c.yVelocity);
+
+                    //...the correct weights of each player...
+                    if (c.clientNumber != client.clientNumber)
+                    {
+                        c.sw.WriteLine("connected\\" + client.clientNumber);
+
+                        //...if that client's weight is 1 then we can leave it at the default value
+                        //otherwise add to the default value the current weight - 1 (1 is the default value)...
+                        if (c.weight > 1)
+                            client.sw.WriteLine("weight\\" + c.clientNumber + "\\" + (c.weight - 1));
+                    }
+                }
+
+                //...positions of the all the pellets
+                for (int i = 0; i < numberOfPellets; i++)
+                {
+                    Pellet pellet = pelletArray[i];
+                    client.sw.WriteLine("spawnPellet\\" + pellet.positionX + "\\" + pellet.positionY + "\\" + pellet.pelletID);
+                }
+
+                //let the newly connected client start playing the game now that they have the correct game state
+                client.sw.WriteLine("start");
+            }
+
             //server loop that checks messages from clients
             public void loop()
             {
-
+                
+                //always run this loop
                 while (true)
                 {
                     try
                     {
+                        //if all connected clients are read, we can start the game
                         if (ClientsReady(clientArray, numberOfClients - 1) && numberOfClients > 1)
                         {
                             //create all the pellets on the server
@@ -214,9 +255,13 @@ namespace SwarchServer
                                     c.sw.WriteLine("spawnPellet\\" + pellet.positionX + "\\" + pellet.positionY + "\\" + pellet.pelletID);
                                 }
 
+                                //now that all the clients have the initial game state
+                                //each client can start playing
                                 c.sw.WriteLine("start");
                             }
 
+                            //now that the players have started playing
+                            //the server should now start checking if any collisions have occured 
                             collisionThread.Start();
                             playing = true;
                         }
@@ -225,16 +270,38 @@ namespace SwarchServer
                         //if they have commands waiting in the queue, dequeue and execute that command
                         foreach (Client client in clientArray)
                         {
+                            //the server must check if it has recieved any commands from the clients
                             if (client.commandQueue.Count > 0)
                             {
+                                //each command is a string that will be delimited by \\
                                 string command = client.commandQueue.Dequeue();
 
+                                //each message will be broken into an array of strings
                                 string[] tokens = command.Split(new string[] { "\\" }, StringSplitOptions.None);
 
+                                /*
+                                 *the commands are as follows
+                                 *play - tells the server that the client is ready to start playing the game
+                                 *userInfo - tells the server that the client is sending login information
+                                 *      -check sthe database and either logins the clients, creates new user info,
+                                 *       denies the login attemps
+                                 *velocity - broadcasts the sending client's updated velocity
+                                 *position - broadcasts the sending client's updated position
+                                 *score - broadcasts the correct scores to each client
+                                 *lag - adds a delay when sending messages between client and server (for testing purposes)
+                                 */
+                             
                                 if (tokens[0].Equals("play"))
                                 {
-                                    client.clientReady = true;
-                                    Console.WriteLine("client " + client.clientNumber + " is ready");
+                                    if (playing)
+                                    {
+                                        loadGameState(client);
+                                    }
+                                    else
+                                    {
+                                        client.clientReady = true;
+                                        Console.WriteLine("client " + client.clientNumber + " is ready");
+                                    }
                                 }
 
 
@@ -348,14 +415,17 @@ namespace SwarchServer
             {
                 while (true)
                 {
+                    //we must check collisions for each client in the game
                     for (int i = 0; i < numberOfClients; i++ )
                     {
                         Client c = clientArray[i];
 
+                        //check if this client has collided with any pellets
                         foreach (Pellet p in pelletArray)
                         {
                             if (p.collided(c))
                             {
+                                //if so respawn that pellet and update weights accordingly
                                 p.respawn();
                                 c.weight += pelletWeight;
                                 c.width += 0.1f;
@@ -444,7 +514,7 @@ namespace SwarchServer
                             }
                         }
 
-
+                        //if a client has reached the winning weight, we will broadcast this to all the clients
                         if (c.weight >= winningWeight && playing)
                         {
                             for (int j = 0; j < numberOfClients; j++)
@@ -461,7 +531,7 @@ namespace SwarchServer
 
         }
 
-
+        //client class that defines all the attributes 
         public class Client
         {
             public NetworkStream nws;
@@ -469,7 +539,6 @@ namespace SwarchServer
             public StreamWriter sw;
             public Queue<string> commandQueue;
             public Thread thread;
-            public Thread positionThread;
 
             public int clientNumber;
             public int weight = 1;
@@ -488,6 +557,10 @@ namespace SwarchServer
             public bool clientReady = false;
             public bool spawned = false;
 
+            //each client must keep track of the network stream between itself and the server
+            //the stream reader used by the server to read in client messages
+            //the stream writer used by the server to send the client messages
+            //an assigned client number
             public Client(NetworkStream nws, StreamReader sr, StreamWriter sw, int clientNumber)
             {
                 this.nws = nws;
@@ -495,6 +568,7 @@ namespace SwarchServer
                 this.sw = sw;
                 this.clientNumber = clientNumber;
 
+                //each client has a thread that the server uses to alternate reading in messages from
                 thread = new Thread(new ThreadStart(this.Service));
                 commandQueue = new Queue<string>();
 
@@ -515,7 +589,7 @@ namespace SwarchServer
                 }
             }
 
-
+            //whenever the position is changed we must also update the positions of the walls of the player
             public void updatePosition(float x, float y)
             {
                 whalePositionX = x;
@@ -527,6 +601,8 @@ namespace SwarchServer
                 bottomWallPosition = whalePositionY - (height * 0.5f);
             }
 
+            //we will collisions based on the position of the walls
+            //if any of those conditions are true then it is impossible for a collision to have occured
             public bool collided(Client client)
             {
 
@@ -536,6 +612,7 @@ namespace SwarchServer
                             (client.rightWallPosition < leftWallPosition));
             }
 
+            //respawn the player in a random position on the screen
             public void respawn()
             {
 
@@ -554,7 +631,7 @@ namespace SwarchServer
                 bottomWallPosition = whalePositionY - (height * 0.5f);
             }
 
-
+            //checks if the client has sent any messages
             public void Service()
             {
 
@@ -580,6 +657,7 @@ namespace SwarchServer
             }
         }
 
+        //pellet class that defines the properties of a pellet
         public class Pellet
         {
             public float weight = 1;
@@ -594,8 +672,7 @@ namespace SwarchServer
             public float topWallPosition;
             public float bottomWallPosition;
 
-            protected Rectangle rect;
-
+            //each pellet has a unique id to keep track of them
             public Pellet(int pelletID)
             {
                 this.pelletID = pelletID;

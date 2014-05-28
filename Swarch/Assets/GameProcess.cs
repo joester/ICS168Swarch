@@ -308,7 +308,7 @@ public class GameProcess : MonoBehaviour {
 				//Note: the weight is responsible for altering the velocity of the avatar
 				else if(tokens[1].Equals("4"))
 				{
-					GameObject.FindGameObjectWithTag("Player4").GetComponent<Player1Script>().weight = 1;	
+					GameObject.FindGameObjectWithTag("Player4").GetComponent<Player4Script>().weight = 1;	
 					GameObject.FindGameObjectWithTag("Player4").transform.position = 
 						new Vector3(Convert.ToSingle(tokens[2]), Convert.ToSingle(tokens[3]), 0f);
 				}
@@ -354,7 +354,7 @@ public class GameProcess : MonoBehaviour {
 						delta = Int32.Parse (tokens[2]);
 
 						//...then adding the new weight to the old weight to update it...
-						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player1Script>().weight += delta;
+						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().weight += delta;
 
 						//...then updating the scale accordingly
 						oldScale = GameObject.FindGameObjectWithTag ("Player3").transform.localScale;
@@ -366,7 +366,7 @@ public class GameProcess : MonoBehaviour {
 						delta = Int32.Parse (tokens[2]);
 
 						//...then adding the new weight to the old weight to update it...
-						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player1Script>().weight += delta;
+						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().weight += delta;
 
 						//...then updating the scale accordingly
 						oldScale = GameObject.FindGameObjectWithTag ("Player4").transform.localScale;
