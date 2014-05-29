@@ -10,9 +10,9 @@ public class LoginScreenGUI : MonoBehaviour {
 
 	public double delTime;
 	public GUIText guiText;
-	//public GUIText latencyText;
 	public string userName;
 	public string password;
+	public string ip;
 
 	public GameProcess process;	
 	private bool show;
@@ -27,19 +27,21 @@ public class LoginScreenGUI : MonoBehaviour {
 		latency = -1;
 		userName = "";
 		password = "";
+		ip = "";
 	}
 	
 	void OnGUI () {
-
-
-		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 25);
-		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 25);
+		
 	
 		userName = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 75, 125, 20), userName, 30);
 		password = GUI.PasswordField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 50, 125, 20), password, '*', 30);
+		ip = GUI.TextField(new Rect(Screen.width / 2 - 55, Screen.height / 2 - 25, 125, 20), ip, 30);
 
-			if(GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 20, 50, 20), "Login"))
+			if(GUI.Button(new Rect(Screen.width / 2 - 50, Screen.height / 2 + 30, 50, 20), "Login"))
 			{
+				if (!ip.Equals(""))
+					process.returnSocket().setIP(ip);
+
 				if(!connected)
 				{
 					guiText.text = "Connecting...";

@@ -49,6 +49,7 @@
      <Compile Include="Assets\BorderScript.cs" />
      <Compile Include="Assets\GameGUIScript.cs" />
      <Compile Include="Assets\GameProcess.cs" />
+     <Compile Include="Assets\GetIPScript.cs" />
      <Compile Include="Assets\GetPlayerName.cs" />
      <Compile Include="Assets\LoginScreenGUI.cs" />
      <Compile Include="Assets\NTPTime.cs" />

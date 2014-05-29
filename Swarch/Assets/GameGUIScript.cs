@@ -17,6 +17,8 @@ public class GameGUIScript : MonoBehaviour {
 	}
 
 	void OnGUI () {
+
+		//only show the start button if this boolean is true
 		if(showStart)
 		{
 			if(GUI.Button(new Rect(Screen.width / 2 - 60, Screen.height / 2 - 75, 50, 20), "Start"))
@@ -28,18 +30,19 @@ public class GameGUIScript : MonoBehaviour {
 			}
 		}
 	
+		//only show the logout button if this boolean is true
 		if(showLogout)
 		{
 			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 75, 80, 20), "Logout"))
-			{
-				//********* COMPLETE THE FOLLOWING CODE
-				//********* KILL THREAD AND SEVER CONNECTION
-				
-				//send a disconnect packet?
+			{			
+				//send a disconnect packet
+				gp.returnSocket().SendTCPPacket("logout\\" + gp.playerName);
 
+				//keep the gameprocess object intact and return to main menu (level 0)
 				DontDestroyOnLoad(gp);
 				Application.LoadLevel(0);
 
+				// KILL THREAD AND SERVER CONNECTION
 				gp.returnSocket().t.Abort();
 				gp.returnSocket().endThread();
 				gp.returnSocket().Disconnect();

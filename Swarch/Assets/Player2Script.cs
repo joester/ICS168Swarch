@@ -3,29 +3,35 @@ using System.Collections;
 
 public class Player2Script : MonoBehaviour {
 	
-	public float xVelocity;
-	public float yVelocity;	
 	public float currentXPosition;
 	public float lastXPosition;
 	public float currentYPosition;
 	public float lastYPosition;
 	public float threshold;
-
+	
+	public float xVelocity;
+	public float yVelocity;	
 	public float currentXVelocity;
 	public float lastXVelocity;
 	public float currentYVelocity;
 	public float lastYVelocity;
 	
 	public float weight;
-
+	
 	public GameProcess gp;
 	
 	// Use this for initialization
 	void Start () {
 		xVelocity = 0;
 		yVelocity = 0;		
-		currentXPosition = 2.5f;
-		lastXPosition = 2.5f;
+		currentXPosition = -2.5f;
+		lastXPosition = -2.5f;
+		
+		currentXVelocity = 0.0f;
+		lastXVelocity = 0.0f;
+		
+		currentYVelocity = 0.0f;
+		lastYVelocity = 0.0f;
 		
 		currentYPosition = 0f;
 		lastYPosition = 0f;
@@ -33,16 +39,16 @@ public class Player2Script : MonoBehaviour {
 		threshold = 0.05f;
 		weight = 1;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
-
-		
 		StartCoroutine ( SendDelay() );
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+		//Read inputs if the client running this code is client 2
 		if (gp.clientNumber == 2)
 		{
+			//WASD for moving via changing the velocity
 			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
 				yVelocity = 0.1f;
 			
@@ -54,7 +60,8 @@ public class Player2Script : MonoBehaviour {
 			
 			if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
 				xVelocity = 0.1f;
-			
+
+			//Check to see if the key was released to stop that velocity
 			if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) ||
 			    Input.GetKeyUp(KeyCode.UpArrow) || Input.GetKeyUp(KeyCode.DownArrow))
 				yVelocity = 0.0f;	
@@ -63,9 +70,11 @@ public class Player2Script : MonoBehaviour {
 			    Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
 				xVelocity = 0.0f;
 
+			//save the velocities
 			currentXVelocity = xVelocity;
 			currentYVelocity = yVelocity;
-			
+
+			//if either of the velocities have changed, send the new velocity to the server
 			if (currentXVelocity != lastXVelocity)
 			{
 				gp.returnSocket().SendTCPPacket("velocity\\x\\"+currentXVelocity);
@@ -82,14 +91,21 @@ public class Player2Script : MonoBehaviour {
 	
 	void FixedUpdate()
 	{
+		//allow movement only once the game has started
 		if (gp.play)
 		{
 			transform.Translate( new Vector3(xVelocity / weight, yVelocity / weight, 0));
 			currentXPosition = transform.position.x;
 			currentYPosition = transform.position.y;		
 		}
+
+		//Makes sure that the player's score text follows the player as it moves
+		GameObject.FindGameObjectWithTag("Weight2").transform.position = 
+			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
+		GameObject.FindGameObjectWithTag("Weight2").guiText.text = weight + "";
 	}
-	
+
+	//used for simulated delay where "delay" = the artificial delay in ms
 	IEnumerator SendDelay() {
 		
 		while ( true )
@@ -97,9 +113,11 @@ public class Player2Script : MonoBehaviour {
 			float delay = 0.0f;
 			
 			yield return new WaitForSeconds ( delay ) ;
-			
+
+			//only send the position updates for player 2 from client 2
 			if (gp.clientNumber == 2)
 			{
+				//check that the difference in position since the last update passes the threshold
 				if (Mathf.Abs(currentXPosition - lastXPosition) >= threshold)
 				{				
 					lastXPosition = currentXPosition;
@@ -114,38 +132,5 @@ public class Player2Script : MonoBehaviour {
 			}
 		}
 	}
-	
-//	void OnCollisionEnter2D(Collision2D coll)
-//	{
-//		if (coll.gameObject.name.Equals("Player1"))
-//		{
-//			if (weight > coll.gameObject.GetComponent<Player1Script>().weight)
-//			{
-//				coll.gameObject.GetComponent<Player1Script>().reset();
-//				float enemyWeight = coll.gameObject.GetComponent<Player1Script>().weight;
-//				weight += enemyWeight;
-//				
-//				Vector3 values = transform.localScale;
-//
-//				transform.localScale = 
-//					new Vector3(values.x + enemyWeight, values.y + enemyWeight, 1);
-//
-//				coll.gameObject.GetComponent<Player1Script>().reset();
-//			}
-//			
-//			else if (weight == coll.gameObject.GetComponent<Player1Script>().weight)
-//			{
-//				reset();
-//				coll.gameObject.GetComponent<Player1Script>().reset();
-//			}
-//		}
-//	}
-	
-//	public void reset()
-//	{
-//		weight = 1;
-//		transform.position = new Vector3(Random.Range(-4f,4f), Random.Range(-4f,4f), 0);
-//		transform.localScale = new Vector3(3f, 3f, 1f);
-//	}
 }
 
