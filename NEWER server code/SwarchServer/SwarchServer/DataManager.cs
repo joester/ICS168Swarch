@@ -145,38 +145,42 @@ namespace SwarchServer
 
         }
 
-//		public void updateHighScores()
-//		{
-//			string sql = "update * from highScores where name =:name";
-//			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
-//			command.Parameters.AddWithValue(":name", name);
-//			SQLiteDataReader dataReader = command.ExecuteReader();
-//
-//			// if the name is in the database
-//
-//			if (dataReader.Read())
-//			{
-//				Console.WriteLine("found: " + name);
-//				if (password.Equals(dataReader["password"]))
-//				{
-//					Console.WriteLine("you have entered the correct password");
-//				}
-//				else
-//				{
-//					Console.WriteLine("Invalid passowrd");
-//				}
-//			}
-//			else
-//			{
-//				sql = "insert into playerInfo (name, password) values(@param1, @param2)";
-//				command = new SQLiteCommand(sql, swarchDatabase);
-//				command.Parameters.Add(new SQLiteParameter("@param1", name));
-//				command.Parameters.Add(new SQLiteParameter("@param2", password));
-//				command.ExecuteNonQuery();
-//
-//			}
-//
-//		}
+		public void insertIntoHighScores(string name, int score)
+		{
+			string sql = "insert into highScores (name, score) values(@param1, @param2)";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.Parameters.Add(new SQLiteParameter("@param1", name));
+			command.Parameters.Add(new SQLiteParameter("@param2", score));
+			command.ExecuteNonQuery();
+		}
+
+		public void printHighTable()
+		{
+			string sql = "select * from highScores";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			SQLiteDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+				Console.WriteLine("Name: " + reader["name"] + "\tScore: " + reader["score"]);
+		}
+
+		public void updateHighScores(string name, int score)
+		{
+			string sql = "UPDATE highScores SET score=@newScore WHERE name=@name";
+			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+			command.Parameters.AddWithValue("@name", name);
+			command.Parameters.AddWithValue("@newScore", score);
+			try{
+				command.ExecuteNonQuery();
+			}catch(Exception fail){
+				Console.WriteLine (fail.Message);
+			}
+
+
+			// if the name is in the database
+
+
+
+		}
 
 
 

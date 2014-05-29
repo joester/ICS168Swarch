@@ -333,7 +333,10 @@ namespace SwarchServer
 											dm.insertIntoPlayer(tokens[1], tokens[2]);
 											loginNames.Add(tokens[1]);
 											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+											client.clientName = tokens[1];
+											dm.insertIntoHighScores(client.clientName, client.score);
 											dm.printTable();
+											dm.printHighTable();
 										}
 
 
@@ -413,6 +416,10 @@ namespace SwarchServer
 									Console.WriteLine("Name about to be removed {0}", tokens[1]);
 									loginNames.Remove(tokens[1]);
 								}
+								else if (tokens[0].Equals("disconnect"))
+								{
+								}
+
                                 else
                                 {
                                     //do nothing
@@ -449,6 +456,9 @@ namespace SwarchServer
                                 c.width += 0.1f;
                                 c.height += 0.1f;
 								c.score += 1;
+								dm.updateHighScores(c.clientName, c.score);
+								dm.printHighTable ();
+
 
 
                                 for (int j = 0; j < numberOfClients; j++)
@@ -477,6 +487,8 @@ namespace SwarchServer
                                     int weightAdded = c2.weight;
                                     c.weight += weightAdded;
 									c.score += 10;
+									dm.updateHighScores (c.clientName, c.score);
+									dm.printHighTable ();
                                     c2.weight = 1;
                                     c2.respawn();
 
@@ -494,6 +506,8 @@ namespace SwarchServer
                                     int weightAdded = c.weight;
                                     c2.weight += weightAdded;
 									c2.score += 10;
+									dm.updateHighScores (c2.clientName, c2.score);
+									dm.printHighTable ();
                                     c.weight = 1;
                                     c.respawn();
 
@@ -567,6 +581,7 @@ namespace SwarchServer
             public Thread thread;
 
             public int clientNumber;
+			public string clientName;
             public int weight = 1;
 			public int score = 0;
             public float whalePositionX = 0;
