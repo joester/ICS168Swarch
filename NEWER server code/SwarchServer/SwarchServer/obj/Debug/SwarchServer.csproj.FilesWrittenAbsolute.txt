@@ -1,0 +1,6 @@
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/System.Data.SQLite.dll
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/SQLite.dll
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/SwarchServer.exe.mdb
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/SwarchServer.exe
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/obj/Debug/SwarchServer.exe
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/obj/Debug/SwarchServer.exe.mdb

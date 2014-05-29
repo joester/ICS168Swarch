@@ -12,13 +12,14 @@ namespace SwarchServer
         {
             createSwarchDatabase();
             connectToDatabase();
-            //createTables ();
+			//createTables ();
             clearTable();
             //fillPlayerTable();
             printTable();
         }
 
-        // Creates an empty database file
+        // Creates an empty database
+
         void createSwarchDatabase()
         {
             try
@@ -32,23 +33,30 @@ namespace SwarchServer
             }
         }
 
-        // Creates a connection with our database file.
+        // Creates a connection with our database
+
         void connectToDatabase()
         {
             swarchDatabase = new SQLiteConnection("Data Source=SwarchDatabase.db;Version=3;");
             swarchDatabase.Open();
         }
 
-        // Creates a table named 'highscores' with two columns: name (a string of max 20 characters) and score (an int)
+		// Create two tables
+
+		// a table named 'playerInfo' with two columns: nae (a string of max 20 characters) and password(a string of max 50 characters)
+        // a table named 'highscores' with two columns: name (a string of max 20 characters) and score (an int)
+
         void createTables()
         {
             string sql = "create table playerInfo (name varchar(20), password varchar(50))";
             SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
             command.ExecuteNonQuery();
-      		//sql = "create table highScores (name varchar(20), score int)";
-            //command = new SQLiteCommand (sql, swarchDatabase);
-            //command.ExecuteNonQuery ();
+      		sql = "create table highScores (name varchar(20), score int)";
+            command = new SQLiteCommand (sql, swarchDatabase);
+            command.ExecuteNonQuery ();
         }
+
+		// Clear the tables
 
         public void clearTable()
         {
@@ -56,6 +64,8 @@ namespace SwarchServer
             SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
             SQLiteDataReader reader = command.ExecuteReader();
         }
+
+		// print the tables to the console
 
         public void printTable()
         {
@@ -66,7 +76,9 @@ namespace SwarchServer
                 Console.WriteLine("Name: " + reader["name"] + "\tpassword: " + reader["password"]);
         }
 
-        public bool existsInTable(String name)
+		// check to see if a value exist in the table
+
+		public bool existsInTable(String name)
         {
             string sql = "SELECT count(*) FROM playerInfo WHERE name=:Name";
             SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
@@ -76,6 +88,8 @@ namespace SwarchServer
             return (count != 0);
         }
 
+		// get the user's password from the playerInfo database
+
         public string getUserPassword(String name)
         {
             string sql = "select password from playerInfo where name=" + "'" + name + "'";
@@ -83,6 +97,9 @@ namespace SwarchServer
             SQLiteDataReader reader = command.ExecuteReader();
             return reader["password"].ToString();
         }
+
+
+
 
         public void getTableEntry(String name)
         {
@@ -92,6 +109,8 @@ namespace SwarchServer
             Console.WriteLine(reader["name"] + " : " + reader["password"]);
 
         }
+
+		// insert a player into the playerInfo table
 
         public void insertIntoPlayer(string name, string password)
         {
@@ -126,10 +145,44 @@ namespace SwarchServer
 
         }
 
+//		public void updateHighScores()
+//		{
+//			string sql = "update * from highScores where name =:name";
+//			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
+//			command.Parameters.AddWithValue(":name", name);
+//			SQLiteDataReader dataReader = command.ExecuteReader();
+//
+//			// if the name is in the database
+//
+//			if (dataReader.Read())
+//			{
+//				Console.WriteLine("found: " + name);
+//				if (password.Equals(dataReader["password"]))
+//				{
+//					Console.WriteLine("you have entered the correct password");
+//				}
+//				else
+//				{
+//					Console.WriteLine("Invalid passowrd");
+//				}
+//			}
+//			else
+//			{
+//				sql = "insert into playerInfo (name, password) values(@param1, @param2)";
+//				command = new SQLiteCommand(sql, swarchDatabase);
+//				command.Parameters.Add(new SQLiteParameter("@param1", name));
+//				command.Parameters.Add(new SQLiteParameter("@param2", password));
+//				command.ExecuteNonQuery();
+//
+//			}
+//
+//		}
+
 
 
         // Inserts some values in the highscores table.
         // As you can see, there is quite some duplicate code here, we'll solve this in part two.
+
         void fillPlayerTable()
         {
             string sql = "insert into playerInfo  (name, password) values ('Jay', '39ec785d60a1b23bfda9944b9138bbcf')";

@@ -17,7 +17,7 @@ namespace SwarchServer
 
         public static SQLiteConnection swarchDatabase;
         string name, password;
-        DataManager dm;
+		public static DataManager dm;
 
         protected int maxPlayers;
         protected int minPlayers;
@@ -30,6 +30,7 @@ namespace SwarchServer
         protected static Socket[] socArray;
         protected static Client[] clientArray;
         protected static Pellet[] pelletArray;
+		protected static List<String> loginNames;
         
 
         protected static Stopwatch uniClock;
@@ -62,6 +63,7 @@ namespace SwarchServer
             numberOfClients = 0;
             numberOfPellets = 5;
 
+			loginNames = new List<string> ();
             TopBorderPosition = RightBorderPosition = 5.0f;
             BottomBorderPosition = LeftBorderPosition = -5.0f;
 
@@ -128,13 +130,13 @@ namespace SwarchServer
 
         public class ServerLoop
         {
-            DataManager dm;
+            
             public Thread loopThread;
             public Thread collisionThread;
 
             public ServerLoop()
             {
-                dm = new DataManager();
+                
                 loopThread = new Thread(new ThreadStart(this.loop));
                 collisionThread = new Thread(new ThreadStart(this.CheckCollisions));
 
@@ -239,29 +241,39 @@ namespace SwarchServer
 
 
                                 //
-                                if (tokens[0].Equals("userInfo"))
+								else if (tokens[0].Equals("userInfo"))
                                 {
 
-                                    if (dm.existsInTable(tokens[1]))
-                                    {
-                                        if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
-                                        {
-                                            client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-                                            Console.WriteLine(tokens[1] + " has logged in");
-                                        }
-                                        else
-                                        {
-                                            client.sw.WriteLine("loginFail");
-                                            Console.WriteLine(tokens[1] + " entered incorrect password");
-                                        }
-                                    }
+									if(!loginNames.Contains(tokens[1]))
+									{
 
-                                    else
-                                    {
-                                        client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-                                        Console.WriteLine(tokens[1] + " has logged in");
-                                        dm.printTable();
-                                    }
+										if (dm.existsInTable(tokens[1]))
+										{
+											if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
+											{
+												client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+												Console.WriteLine(tokens[1] + " has logged in");
+											}
+											else
+											{
+												client.sw.WriteLine("loginFail");
+												Console.WriteLine(tokens[1] + " entered incorrect password");
+											}
+										}
+
+										else
+										{
+											dm.insertIntoPlayer(tokens[1], tokens[2]);
+											loginNames.Add(tokens[1]);
+											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+											dm.printTable();
+										}
+
+
+									}
+									else{
+										client.sw.WriteLine("alreadyLoggedIn\\" + tokens[1]);
+									}
 
                                 }
 
@@ -328,6 +340,12 @@ namespace SwarchServer
 
                                     client1.sw.WriteLine("lag\\" + ticks);
                                 }
+
+								else if (tokens[0].Equals("logout"))
+								{
+									Console.WriteLine("Name about to be removed {0}", tokens[1]);
+									loginNames.Remove(tokens[1]);
+								}
                                 else
                                 {
                                     //do nothing
@@ -360,14 +378,18 @@ namespace SwarchServer
                                 c.weight += pelletWeight;
                                 c.width += 0.1f;
                                 c.height += 0.1f;
+								c.score += 1;
+
 
                                 for (int j = 0; j < numberOfClients; j++)
                                 {
                                     Client c2 = clientArray[j];
                                     c2.sw.WriteLine("respawnPellet\\" + p.positionX + "\\" + p.positionY + "\\" + p.pelletID);
+
                                     //Console.WriteLine("Client " + c2.clientNumber + " was told to respawn pellet " + p.pelletID + " at position " + p.positionX + ", " + p.positionY);
 
                                     c2.sw.WriteLine("weight\\" + c.clientNumber + "\\" + pelletWeight);
+									c2.sw.WriteLine ("score\\" + c.clientNumber + "\\" + c.score);
                                 }
                             }
                         }
@@ -384,6 +406,7 @@ namespace SwarchServer
                                 {
                                     int weightAdded = c2.weight;
                                     c.weight += weightAdded;
+									c.score += 10;
                                     c2.weight = 1;
                                     c2.respawn();
 
@@ -391,6 +414,7 @@ namespace SwarchServer
                                     {
                                         Client c3 = clientArray[k];
                                         c3.sw.WriteLine("weight\\" + c.clientNumber + "\\" + weightAdded);
+										c3.sw.WriteLine ("score\\" + c.clientNumber + "\\" + c.score);
                                         c3.sw.WriteLine("resetPlayer\\" + c2.clientNumber + "\\" + c2.whalePositionX + "\\" + c2.whalePositionY);
                                     }
                                 }
@@ -399,6 +423,7 @@ namespace SwarchServer
                                 {
                                     int weightAdded = c.weight;
                                     c2.weight += weightAdded;
+									c2.score += 10;
                                     c.weight = 1;
                                     c.respawn();
 
@@ -406,6 +431,7 @@ namespace SwarchServer
                                     {
                                         Client c3 = clientArray[k];
                                         c3.sw.WriteLine("weight\\" + c2.clientNumber + "\\" + weightAdded);
+										c3.sw.WriteLine ("score\\" + c2.clientNumber + "\\" + c2.score);
                                         c3.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
                                     }
                                 }
@@ -473,6 +499,7 @@ namespace SwarchServer
 
             public int clientNumber;
             public int weight = 1;
+			public int score = 0;
             public float whalePositionX = 0;
             public float whalePositionY = 0;
             public float xVelocity = 0;
