@@ -15,13 +15,11 @@ public class LoginScreenGUI : MonoBehaviour {
 	public string ip;
 
 	public GameProcess process;	
-	private bool show;
 	public bool connected;
 	public long latency;
 	
 	void Start () 
 	{
-		show = false;
 		connected = false;
 		process = GameObject.Find("GameProcess").GetComponent<GameProcess>();
 		latency = -1;

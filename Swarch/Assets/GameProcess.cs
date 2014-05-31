@@ -8,8 +8,6 @@ public class GameProcess : MonoBehaviour {
 	//PUBLIC MEMBERS 
 	public int clientNumber;
 	public string playerName;
-	GameObject Player1;
-	GameObject Player2;
 	public bool play;
 
 	public DateTime dT;
@@ -27,9 +25,6 @@ public class GameProcess : MonoBehaviour {
 
 		//play = false;
 		socks = new Sockets();
-
-		Player1 = GameObject.Find("Player1");
-		Player2 = GameObject.Find ("Player2");
 
 		play = false;	
 	}
@@ -328,7 +323,7 @@ public class GameProcess : MonoBehaviour {
 						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
 
-						//...then adding the new weight to the old weight to update it...
+						//...then adding the change in weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player1").GetComponent<Player1Script>().weight += delta;
 
 						//...then updating the scale accordingly
@@ -341,7 +336,7 @@ public class GameProcess : MonoBehaviour {
 						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
 
-						//...then adding the new weight to the old weight to update it...
+						//...then adding the change in weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().weight += delta;
 
 						//...then updating the scale accordingly
@@ -349,11 +344,12 @@ public class GameProcess : MonoBehaviour {
 						GameObject.FindGameObjectWithTag ("Player2").transform.localScale = 
 							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
 						break;
+
 					case 3:
 						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
 
-						//...then adding the new weight to the old weight to update it...
+						//...then adding the change in weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().weight += delta;
 
 						//...then updating the scale accordingly
@@ -361,11 +357,12 @@ public class GameProcess : MonoBehaviour {
 						GameObject.FindGameObjectWithTag ("Player3").transform.localScale = 
 							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
 						break;
+
 					case 4:
 						//...and by how much...
 						delta = Int32.Parse (tokens[2]);
 
-						//...then adding the new weight to the old weight to update it...
+						//...then adding the change in weight to the old weight to update it...
 						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().weight += delta;
 
 						//...then updating the scale accordingly
@@ -376,12 +373,38 @@ public class GameProcess : MonoBehaviour {
 				}
 			}
 
+			else if (tokens[0].Equals("score"))
+			{
+				//determining which player's score got altered...
+				switch (Int32.Parse (tokens[1]))
+				{
+					case 1:
+					GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().score = Int32.Parse(tokens[2]);
+					break;
+
+					case 2:
+					GameObject.FindGameObjectWithTag("Player2").GetComponent<Player2Script>().score = Int32.Parse(tokens[2]);
+					break;
+
+					case 3:
+					GameObject.FindGameObjectWithTag("Player3").GetComponent<Player3Script>().score = Int32.Parse(tokens[2]);
+					break;
+
+					case 4:
+					GameObject.FindGameObjectWithTag("Player4").GetComponent<Player4Script>().score = Int32.Parse(tokens[2]);
+					break;
+				}
+			}
+
 			else
 			{
 				string packet = "Unrecognized packet: ";
 				foreach (string i in tokens)
 				{
-					packet += "\\" + i;
+					packet += i;
+
+					if(i != tokens[tokens.Length - 1])
+						packet += "\\";
 				}
 				UnityEngine.Debug.Log(packet);
 			}

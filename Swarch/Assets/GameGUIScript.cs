@@ -21,7 +21,7 @@ public class GameGUIScript : MonoBehaviour {
 		//only show the start button if this boolean is true
 		if(showStart)
 		{
-			if(GUI.Button(new Rect(Screen.width / 2 - 60, Screen.height / 2 - 75, 50, 20), "Start"))
+			if(GUI.Button(new Rect(Screen.width / 2 - 25, Screen.height / 2 - 75, 50, 20), "Start"))
 			{
 				gp.returnSocket().SendTCPPacket("play");
 
@@ -31,9 +31,9 @@ public class GameGUIScript : MonoBehaviour {
 		}
 	
 		//only show the logout button if this boolean is true
-		if(showLogout)
-		{
-			if ( GUI.Button( new Rect( Screen.width / 2, Screen.height / 2 - 75, 80, 20), "Logout"))
+		//if(showLogout)
+		//{
+			if ( GUI.Button( new Rect( Screen.width / 2 - 40, Screen.height - (Screen.height - 20), 80, 20), "Logout"))
 			{			
 				//send a disconnect packet
 				gp.returnSocket().SendTCPPacket("logout\\" + gp.playerName);
@@ -47,7 +47,7 @@ public class GameGUIScript : MonoBehaviour {
 				gp.returnSocket().endThread();
 				gp.returnSocket().Disconnect();
 			}
-		}
+		//}
 	}
 	
 	// Update is called once per frame
