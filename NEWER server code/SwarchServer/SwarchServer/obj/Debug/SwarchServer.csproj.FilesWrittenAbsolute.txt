@@ -4,3 +4,5 @@
 /Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/SwarchServer.exe
 /Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/obj/Debug/SwarchServer.exe
 /Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/obj/Debug/SwarchServer.exe.mdb
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/Newtonsoft.Json.dll
+/Users/jayhawkfan999/Documents/UnityProjects/ICS168Swarch/NEWER server code/SwarchServer/SwarchServer/bin/Debug/ICSharpCode.SharpZipLib.dll

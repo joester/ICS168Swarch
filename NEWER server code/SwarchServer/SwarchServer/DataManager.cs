@@ -1,21 +1,43 @@
 ﻿using System;
 using System.Data.SQLite;
+using System.Net.Sockets;
+using System.IO;
+using System.Threading;
+using System.Data.SQLite;
+using System.Net;
+using System.Text;
+using SimpleJSON;
+
+
+
+
+
 
 namespace SwarchServer
 {
     public class DataManager
     {
         public static SQLiteConnection swarchDatabase;
+		IPEndPoint RemoteEndPoint;
+		Socket s;
+
+		StringBuilder sb;
+		StringWriter sw;
+
 
 
         public DataManager()
         {
+			RemoteEndPoint = new IPEndPoint (IPAddress.Any, 9000);
+			s = new Socket (AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
             createSwarchDatabase();
             connectToDatabase();
 			//createTables ();
-            clearTable();
-            //fillPlayerTable();
+			clearTable();
+            fillPlayerTable();
             printTable();
+
         }
 
         // Creates an empty database
@@ -25,7 +47,7 @@ namespace SwarchServer
             try
             {
 
-                SQLiteConnection.CreateFile("SwarchDatabase.sqlite");
+				SQLiteConnection.CreateFile("/Applications/XAMPP/xamppfiles/htdocs/SwarchWebServer/SwarchDatabase.sqlite");
             }
             catch (Exception e)
             {
@@ -63,6 +85,9 @@ namespace SwarchServer
             string sql = "DELETE FROM playerInfo";
             SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
             SQLiteDataReader reader = command.ExecuteReader();
+			sql = "DELETE FROM highScores";
+			command = new SQLiteCommand(sql, swarchDatabase);
+			reader = command.ExecuteReader();
         }
 
 		// print the tables to the console
@@ -154,8 +179,16 @@ namespace SwarchServer
 			command.ExecuteNonQuery();
 		}
 
+		public void deleteFromHighScores(string name)
+		{
+			string sql = "delete from highScores WHERE name='"+name+"'";
+			SQLiteCommand command = new SQLiteCommand (sql, swarchDatabase);
+			command.ExecuteNonQuery ();
+		}
+
 		public void printHighTable()
 		{
+
 			string sql = "select * from highScores";
 			SQLiteCommand command = new SQLiteCommand(sql, swarchDatabase);
 			SQLiteDataReader reader = command.ExecuteReader();
@@ -199,6 +232,9 @@ namespace SwarchServer
             command = new SQLiteCommand(sql, swarchDatabase);
             command.ExecuteNonQuery();
         }
+
+
+
 
     }
 }

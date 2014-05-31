@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 using System.Data.SQLite;
+using Newtonsoft.Json;
 
 namespace SwarchServer
 {
@@ -51,11 +52,14 @@ namespace SwarchServer
 
         public Thread listenerThead;
 
+		public static Scoreboard scoreBoard;
+
 
         public Server()
         {
             
             dm = new DataManager();
+			scoreBoard = new Scoreboard ();
             maxPlayers = 4;
             minPlayers = 2;
             winningWeight = 10;
@@ -68,7 +72,8 @@ namespace SwarchServer
             BottomBorderPosition = LeftBorderPosition = -5.0f;
 
             rng = new Random();
-            listener = new TcpListener(4185);
+			//4185
+			listener = new TcpListener(4188);
             socArray = new Socket[maxPlayers];
             clientArray = new Client[maxPlayers];
             pelletArray = new Pellet[numberOfPellets];
@@ -86,7 +91,7 @@ namespace SwarchServer
 
         public void Listen()
         {
-            listener.Start();
+			listener.Start();
 
             while (true)
             {
@@ -334,6 +339,8 @@ namespace SwarchServer
 											loginNames.Add(tokens[1]);
 											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
 											client.clientName = tokens[1];
+											scoreBoard.sendMessage(client.clientName, client.score);
+
 											dm.insertIntoHighScores(client.clientName, client.score);
 											dm.printTable();
 											dm.printHighTable();
@@ -415,6 +422,7 @@ namespace SwarchServer
 								{
 									Console.WriteLine("Name about to be removed {0}", tokens[1]);
 									loginNames.Remove(tokens[1]);
+									dm.deleteFromHighScores(client.clientName);
 								}
 								else if (tokens[0].Equals("disconnect"))
 								{
@@ -457,6 +465,8 @@ namespace SwarchServer
                                 c.height += 0.1f;
 								c.score += 1;
 								dm.updateHighScores(c.clientName, c.score);
+
+
 								dm.printHighTable ();
 
 
