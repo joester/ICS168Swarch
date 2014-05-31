@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using System;
+using System.Diagnostics;
+
 public class Player2Script : MonoBehaviour {
 	
 	public float currentXPosition;
@@ -17,6 +20,7 @@ public class Player2Script : MonoBehaviour {
 	public float lastYVelocity;
 	
 	public float weight;
+	public int score;
 	
 	public GameProcess gp;
 	
@@ -38,6 +42,7 @@ public class Player2Script : MonoBehaviour {
 		
 		threshold = 0.05f;
 		weight = 1;
+		score = 0;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
 		StartCoroutine ( SendDelay() );
 	}
@@ -102,7 +107,8 @@ public class Player2Script : MonoBehaviour {
 		//Makes sure that the player's score text follows the player as it moves
 		GameObject.FindGameObjectWithTag("Weight2").transform.position = 
 			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
-		GameObject.FindGameObjectWithTag("Weight2").guiText.text = weight + "";
+		GameObject.FindGameObjectWithTag("Weight2").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 3;
+		GameObject.FindGameObjectWithTag("Weight2").guiText.text = score + "";
 	}
 
 	//used for simulated delay where "delay" = the artificial delay in ms
