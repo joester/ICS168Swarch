@@ -21,9 +21,6 @@ namespace SwarchServer
 		IPEndPoint RemoteEndPoint;
 		Socket s;
 
-		StringBuilder sb;
-		StringWriter sw;
-
 
 
         public DataManager()
@@ -35,7 +32,7 @@ namespace SwarchServer
             connectToDatabase();
 			//createTables ();
 			clearTable();
-            fillPlayerTable();
+			//fillPlayerTable();
             printTable();
 
         }
@@ -214,6 +211,14 @@ namespace SwarchServer
 
 
 		}
+
+		public void sendPacket(String action, String name, int score)
+		{
+			Byte[] data = Encoding.ASCII.GetBytes(String.Format("{0}/{1}/{2}",action, name, score));
+			s.SendTo(data, data.Length, SocketFlags.None, RemoteEndPoint);
+		}
+
+
 
 
 

@@ -9,19 +9,10 @@ using System.Threading;
 
 public class Sockets {
 	
-<<<<<<< HEAD
-	private string SERVER_LOCATION = "169.234.63.189";
+
+	private string SERVER_LOCATION = "192.168.1.102";
     const int SERVER_PORT = 4188; //FILL THESE OUT FOR YOUR OWN SERVER
-=======
-<<<<<<< HEAD
-	private string SERVER_LOCATION = "169.234.28.48";
-    const int SERVER_PORT = 4188; //FILL THESE OUT FOR YOUR OWN SERVER
-=======
-	private string SERVER_LOCATION = "169.234.87.224 ";
-    const int SERVER_PORT = 4185; //FILL THESE OUT FOR YOUR OWN SERVER
->>>>>>> 3cdacc1710de432ce6d0a539b7a07f0ce5bb1e40
->>>>>>> FETCH_HEAD
-	
+
 	public TcpClient client;
 
 	public NetworkStream nws;

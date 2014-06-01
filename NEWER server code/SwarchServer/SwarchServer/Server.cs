@@ -52,15 +52,14 @@ namespace SwarchServer
 
         public Thread listenerThead;
 
-		public static Scoreboard scoreBoard;
+
 
 
         public Server()
         {
             
             dm = new DataManager();
-			scoreBoard = new Scoreboard ();
-            maxPlayers = 4;
+			maxPlayers = 4;
             minPlayers = 2;
             winningWeight = 10;
             pelletWeight = 1;
@@ -339,7 +338,7 @@ namespace SwarchServer
 											loginNames.Add(tokens[1]);
 											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
 											client.clientName = tokens[1];
-											scoreBoard.sendMessage(client.clientName, client.score);
+											dm.sendPacket("add", client.clientName, client.score);
 
 											dm.insertIntoHighScores(client.clientName, client.score);
 											dm.printTable();
@@ -465,6 +464,7 @@ namespace SwarchServer
                                 c.height += 0.1f;
 								c.score += 1;
 								dm.updateHighScores(c.clientName, c.score);
+								dm.sendPacket ("update", c.clientName, c.score);
 
 
 								dm.printHighTable ();
@@ -498,6 +498,7 @@ namespace SwarchServer
                                     c.weight += weightAdded;
 									c.score += 10;
 									dm.updateHighScores (c.clientName, c.score);
+									dm.sendPacket ("update", c.clientName, c.score);
 									dm.printHighTable ();
                                     c2.weight = 1;
                                     c2.respawn();
@@ -517,6 +518,7 @@ namespace SwarchServer
                                     c2.weight += weightAdded;
 									c2.score += 10;
 									dm.updateHighScores (c2.clientName, c2.score);
+									dm.sendPacket ("update", c2.clientName, c2.score);
 									dm.printHighTable ();
                                     c.weight = 1;
                                     c.respawn();
@@ -570,8 +572,13 @@ namespace SwarchServer
                             for (int j = 0; j < numberOfClients; j++)
                             {
                                 Client c2 = clientArray[j];
+
                                 c2.sw.WriteLine("winningClient\\" + c.clientNumber);
                             }
+
+							dm.sendPacket ("save", c.clientName, c.score);
+
+							 
 
                             playing = false;
                         }
