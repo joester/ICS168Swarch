@@ -9,7 +9,6 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 using System.Data.SQLite;
-using Newtonsoft.Json;
 
 namespace SwarchServer
 {
@@ -18,7 +17,7 @@ namespace SwarchServer
 
         public static SQLiteConnection swarchDatabase;
         string name, password;
-		public static DataManager dm;
+        public static DataManager dm;
 
         protected int maxPlayers;
         protected int minPlayers;
@@ -29,17 +28,12 @@ namespace SwarchServer
         protected static int numberOfPellets;
         protected static TcpListener listener;
         protected static Socket[] socArray;
-        protected static Client[] clientArray;
+        protected static LinkedList<Client> clientArray;
         protected static Pellet[] pelletArray;
-		protected static List<String> loginNames;
-        
+        protected static List<String> loginNames;
+        protected static LinkedList<int> availableClientNumbers;
 
         protected static Stopwatch uniClock;
-
-        protected static Client client1;
-        protected static Client client2;
-        protected static Client client3;
-        protected static Client client4;
 
         protected static float TopBorderPosition;
         protected static float BottomBorderPosition;
@@ -53,28 +47,30 @@ namespace SwarchServer
         public Thread listenerThead;
 
 
-
-
         public Server()
         {
-            
+
             dm = new DataManager();
-			maxPlayers = 4;
+            maxPlayers = 4;
             minPlayers = 2;
             winningWeight = 10;
             pelletWeight = 1;
             numberOfClients = 0;
             numberOfPellets = 5;
 
-			loginNames = new List<string> ();
+            loginNames = new List<string>();
+            availableClientNumbers = new LinkedList<int>();
+
+            for (int i = 1; i <= 4; i++)
+                availableClientNumbers.AddLast(i);
+
             TopBorderPosition = RightBorderPosition = 5.0f;
             BottomBorderPosition = LeftBorderPosition = -5.0f;
 
             rng = new Random();
-			//4185
-			listener = new TcpListener(4188);
+            listener = new TcpListener(4185);
             socArray = new Socket[maxPlayers];
-            clientArray = new Client[maxPlayers];
+            clientArray = new LinkedList<Client>();
             pelletArray = new Pellet[numberOfPellets];
 
             listenerThead = new Thread(new ThreadStart(this.Listen));
@@ -90,7 +86,7 @@ namespace SwarchServer
 
         public void Listen()
         {
-			listener.Start();
+            listener.Start();
 
             while (true)
             {
@@ -110,14 +106,17 @@ namespace SwarchServer
                         StreamWriter sw = new StreamWriter(nws); //establish a stream to read to
                         sw.AutoFlush = true;//enable automatic flushing, flush thte wrtie stream after every write command, no need to send buffered data
 
-                        Client client = new Client(nws, sr, sw, numberOfClients + 1);
+                        int clientNumber = availableClientNumbers.First.Value;
+                        availableClientNumbers.RemoveFirst();
+
+                        Client client = new Client(nws, sr, sw, clientNumber);
                         client.thread.Start();
 
-                        clientArray[numberOfClients] = client;
+                        clientArray.AddLast(client);
 
                         numberOfClients++;
 
-                        loop.playerConnected();
+                        //loop.playerConnected();
 
                         Console.WriteLine("Client " + client.clientNumber + " has connected");
                         client.sw.WriteLine("client\\" + client.clientNumber);
@@ -132,15 +131,32 @@ namespace SwarchServer
 
         }
 
+
+        //if a client is disconnected in anyway
+        //we must add that client number to the list of available numbers and remove the pointer to this client
+        //and inform all other clients that this client has disconnected
+        public static void RemoveClient(Client client)
+        {
+            availableClientNumbers.AddLast(client.clientNumber);
+            clientArray.Remove(client);
+            numberOfClients--;
+
+            foreach (Client c in clientArray)
+            {
+                c.sw.WriteLine("disconnected\\" + client.clientNumber);
+            }
+
+        }
+
         public class ServerLoop
         {
-            
+
             public Thread loopThread;
             public Thread collisionThread;
 
             public ServerLoop()
             {
-                
+
                 loopThread = new Thread(new ThreadStart(this.loop));
                 collisionThread = new Thread(new ThreadStart(this.CheckCollisions));
 
@@ -149,35 +165,17 @@ namespace SwarchServer
             }
 
             //happens when a player connects, need to update the client objects
-            public void playerConnected()
-            {
-                switch (numberOfClients)
-                {
-                    case 1:
-                        client1 = clientArray[0];
-                        break;
-                    case 2:
-                        client2 = clientArray[1];
-                        break;
-                    case 3:
-                        client3 = clientArray[2];
-                        break;
-                    case 4:
-                        client4 = clientArray[3];
-                        break;
 
-                }
-            }
 
 
             //recursively check if all clients are ready
-            public bool ClientsReady(Client[] clients, int currentClient)
+            public bool ClientsReady(LinkedList<Client> clients, LinkedListNode<Client> currentClient)
             {
 
-                if (currentClient == 0)
-                    return clients[currentClient].clientReady;
-                else if (currentClient > 0)
-                    return clients[currentClient].clientReady && ClientsReady(clientArray, currentClient - 1);
+                if (currentClient.Next == null)
+                    return currentClient.Value.clientReady;
+                else
+                    return currentClient.Value.clientReady && ClientsReady(clientArray, currentClient.Next);
 
                 return false;
 
@@ -191,9 +189,8 @@ namespace SwarchServer
                 //tell all the clients the follow:
                 //who is in the game
                 //the correct positions and velocities of the clients in the game...
-                for (int i = 0; i < numberOfClients; i++)
+                foreach (Client c in clientArray)
                 {
-                    Client c = clientArray[i];
 
                     client.sw.WriteLine("connected\\" + c.clientNumber);
                     client.sw.WriteLine("position\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
@@ -225,14 +222,14 @@ namespace SwarchServer
             //server loop that checks messages from clients
             public void loop()
             {
-                
+
                 //always run this loop
                 while (true)
                 {
                     try
                     {
                         //if all connected clients are read, we can start the game
-                        if (ClientsReady(clientArray, numberOfClients - 1) && numberOfClients > 1)
+                        if (ClientsReady(clientArray, clientArray.First) && numberOfClients > 1)
                         {
                             //create all the pellets on the server
                             for (int i = 0; i < numberOfPellets; i++)
@@ -240,15 +237,13 @@ namespace SwarchServer
                                 pelletArray[i] = new Pellet(i);
                             }
 
-                            for (int i = 0; i < numberOfClients; i++)
+                            foreach (Client c in clientArray)
                             {
-                                Client c = clientArray[i];
                                 c.clientReady = false;
 
                                 //let all the clients know about each other
-                                for (int j = 0; j < numberOfClients; j++ )
+                                foreach (Client c2 in clientArray)
                                 {
-                                    Client c2 = clientArray[j];
 
                                     c2.sw.WriteLine("connected\\" + c.clientNumber);
 
@@ -268,7 +263,7 @@ namespace SwarchServer
 
                             //now that the players have started playing
                             //the server should now start checking if any collisions have occured 
-                            collisionThread.Start();
+                            //collisionThread.Start();
                             playing = true;
                         }
 
@@ -296,7 +291,7 @@ namespace SwarchServer
                                  *score - broadcasts the correct scores to each client
                                  *lag - adds a delay when sending messages between client and server (for testing purposes)
                                  */
-                             
+
                                 if (tokens[0].Equals("play"))
                                 {
                                     if (playing)
@@ -312,44 +307,43 @@ namespace SwarchServer
 
 
                                 //
-								else if (tokens[0].Equals("userInfo"))
+                                else if (tokens[0].Equals("userInfo"))
                                 {
 
-									if(!loginNames.Contains(tokens[1]))
-									{
+                                    if (!loginNames.Contains(tokens[1]))
+                                    {
 
-										if (dm.existsInTable(tokens[1]))
-										{
-											if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
-											{
-												client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-												Console.WriteLine(tokens[1] + " has logged in");
-											}
-											else
-											{
-												client.sw.WriteLine("loginFail");
-												Console.WriteLine(tokens[1] + " entered incorrect password");
-											}
-										}
+                                        if (dm.existsInTable(tokens[1]))
+                                        {
+                                            if (tokens[2].Equals(dm.getUserPassword(tokens[1])))
+                                            {
+                                                client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+                                                Console.WriteLine(tokens[1] + " has logged in");
+                                            }
+                                            else
+                                            {
+                                                client.sw.WriteLine("loginFail");
+                                                Console.WriteLine(tokens[1] + " entered incorrect password");
+                                            }
+                                        }
 
-										else
-										{
-											dm.insertIntoPlayer(tokens[1], tokens[2]);
-											loginNames.Add(tokens[1]);
-											client.sw.WriteLine("loginSucceed\\" + tokens[1]);
-											client.clientName = tokens[1];
-											dm.sendPacket("add", client.clientName, client.score);
-
-											dm.insertIntoHighScores(client.clientName, client.score);
-											dm.printTable();
-											dm.printHighTable();
-										}
+                                        else
+                                        {
+                                            dm.insertIntoPlayer(tokens[1], tokens[2]);
+                                            loginNames.Add(tokens[1]);
+                                            client.sw.WriteLine("loginSucceed\\" + tokens[1]);
+                                            client.clientName = tokens[1];
+                                            dm.insertIntoHighScores(client.clientName, client.score);
+                                            dm.printTable();
+                                            dm.printHighTable();
+                                        }
 
 
-									}
-									else{
-										client.sw.WriteLine("alreadyLoggedIn\\" + tokens[1]);
-									}
+                                    }
+                                    else
+                                    {
+                                        client.sw.WriteLine("alreadyLoggedIn\\" + tokens[1]);
+                                    }
 
                                 }
 
@@ -375,7 +369,7 @@ namespace SwarchServer
                                         if (c.clientNumber != client.clientNumber)
                                         {
                                             c.sw.WriteLine("velocity\\" + client.clientNumber + "\\" + client.xVelocity + "\\" + client.yVelocity);
-                                            
+
                                         }
                                     }
 
@@ -397,13 +391,10 @@ namespace SwarchServer
                                         if (c.clientNumber != client.clientNumber)
                                             c.sw.WriteLine("position\\" + client.clientNumber + "\\" + client.whalePositionX + "\\" + client.whalePositionY);
                                     }
+
+                                    CheckCollisions();
                                 }
 
-                                else if (tokens[0].Equals("score"))
-                                {
-                                    client1.sw.WriteLine("score\\" + tokens[1]);
-                                    client2.sw.WriteLine("score\\" + tokens[1]);
-                                }
 
                                 else if (tokens[0].Equals("lag"))
                                 {
@@ -414,18 +405,17 @@ namespace SwarchServer
 
                                     long ticks = dt.Ticks;
 
-                                    client1.sw.WriteLine("lag\\" + ticks);
+                                    //client1.sw.WriteLine("lag\\" + ticks);
                                 }
 
-								else if (tokens[0].Equals("logout"))
-								{
-									Console.WriteLine("Name about to be removed {0}", tokens[1]);
-									loginNames.Remove(tokens[1]);
-									dm.deleteFromHighScores(client.clientName);
-								}
-								else if (tokens[0].Equals("disconnect"))
-								{
-								}
+                                else if (tokens[0].Equals("logout"))
+                                {
+                                    Console.WriteLine("Name about to be removed {0}", tokens[1]);
+                                    loginNames.Remove(tokens[1]);
+                                }
+                                else if (tokens[0].Equals("disconnect"))
+                                {
+                                }
 
                                 else
                                 {
@@ -445,146 +435,143 @@ namespace SwarchServer
 
             public void CheckCollisions()
             {
-                while (true)
+                //while (true)
+                //{
+                //we must check collisions for each client in the game
+                foreach (Client c in clientArray)
                 {
-                    //we must check collisions for each client in the game
-                    for (int i = 0; i < numberOfClients; i++ )
+                    // Client c = clientArray[i];
+
+                    //check if this client has collided with any pellets
+                    foreach (Pellet p in pelletArray)
                     {
-                        Client c = clientArray[i];
-
-                        //check if this client has collided with any pellets
-                        foreach (Pellet p in pelletArray)
+                        if (p.collided(c))
                         {
-                            if (p.collided(c))
+                            //if so respawn that pellet and update weights accordingly
+                            p.respawn();
+                            c.weight += pelletWeight;
+                            c.width += 0.1f;
+                            c.height += 0.1f;
+                            c.updateBorders();
+                            c.score += 1;
+                            dm.updateHighScores(c.clientName, c.score);
+                            dm.printHighTable();
+
+
+
+                            foreach (Client c2 in clientArray)
                             {
-                                //if so respawn that pellet and update weights accordingly
-                                p.respawn();
-                                c.weight += pelletWeight;
-                                c.width += 0.1f;
-                                c.height += 0.1f;
-								c.score += 1;
-								dm.updateHighScores(c.clientName, c.score);
-								dm.sendPacket ("update", c.clientName, c.score);
+                                // Client c2 = clientArray[j];
+                                c2.sw.WriteLine("respawnPellet\\" + p.positionX + "\\" + p.positionY + "\\" + p.pelletID);
 
+                                //Console.WriteLine("Client " + c2.clientNumber + " was told to respawn pellet " + p.pelletID + " at position " + p.positionX + ", " + p.positionY);
 
-								dm.printHighTable ();
+                                c2.sw.WriteLine("weight\\" + c.clientNumber + "\\" + pelletWeight);
+                                c2.sw.WriteLine("score\\" + c.clientNumber + "\\" + c.score);
+                            }
+                        }
+                    }
 
+                    //we will loop through the clients to see if we have collided with any others
+                    foreach (Client c2 in clientArray)
+                    {
+                        // c2 = clientArray[j];
 
+                        if (!c.Equals(c2) && c.collided(c2))
+                        {
+                            //client 1 has eaten client 2 and we will increase the weight of client 1 and reset client 2
+                            if (c.weight > c2.weight)
+                            {
+                                int weightAdded = c2.weight;
+                                c.weight += weightAdded;
+                                c.width += ((float)weightAdded * 0.05f);
+                                c.updateBorders();
+                                c.score += 10;
+                                dm.updateHighScores(c.clientName, c.score);
+                                dm.printHighTable();
+                                c2.weight = 1;
+                                c2.respawn();
 
-                                for (int j = 0; j < numberOfClients; j++)
+                                foreach (Client c3 in clientArray)
                                 {
-                                    Client c2 = clientArray[j];
-                                    c2.sw.WriteLine("respawnPellet\\" + p.positionX + "\\" + p.positionY + "\\" + p.pelletID);
+                                    // Client c3 = clientArray[k];
+                                    c3.sw.WriteLine("weight\\" + c.clientNumber + "\\" + weightAdded);
+                                    c3.sw.WriteLine("score\\" + c.clientNumber + "\\" + c.score);
+                                    c3.sw.WriteLine("resetPlayer\\" + c2.clientNumber + "\\" + c2.whalePositionX + "\\" + c2.whalePositionY);
+                                }
+                            }
 
-                                    //Console.WriteLine("Client " + c2.clientNumber + " was told to respawn pellet " + p.pelletID + " at position " + p.positionX + ", " + p.positionY);
+                            //client 2 has eaten client 1 and we will increase the weight of client 2 and reset client 1
+                            else if (c2.weight > c.weight)
+                            {
+                                int weightAdded = c.weight;
+                                c2.weight += weightAdded;
+                                c2.width += ((float)weightAdded * 0.05f);
+                                c2.updateBorders();
+                                c2.score += 10;
+                                dm.updateHighScores(c2.clientName, c2.score);
+                                dm.printHighTable();
+                                c.weight = 1;
+                                c.respawn();
 
-                                    c2.sw.WriteLine("weight\\" + c.clientNumber + "\\" + pelletWeight);
-									c2.sw.WriteLine ("score\\" + c.clientNumber + "\\" + c.score);
+                                foreach (Client c3 in clientArray)
+                                {
+                                    //Client c3 = clientArray[k];
+                                    c3.sw.WriteLine("weight\\" + c2.clientNumber + "\\" + weightAdded);
+                                    c3.sw.WriteLine("score\\" + c2.clientNumber + "\\" + c2.score);
+                                    c3.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
+                                }
+                            }
+
+                            //both clients have the same weight and we reset both of their positions and weights
+                            else
+                            {
+                                c.weight = 1;
+                                c2.weight = 1;
+                                c.respawn();
+                                c2.respawn();
+
+                                foreach (Client c3 in clientArray)
+                                {
+                                    //Client c3 = clientArray[k];
+                                    c3.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
+                                    c3.sw.WriteLine("resetPlayer\\" + c2.clientNumber + "\\" + c2.whalePositionX + "\\" + c2.whalePositionY);
                                 }
                             }
                         }
+                    }
 
-                        //we will loop through the clients to see if we have collided with any others
-                        for (int j = 0; j < numberOfClients; j++)
+                    //if the client collides with any of the borders, reset their weight and position
+                    if (c.topWallPosition > TopBorderPosition ||
+                        c.bottomWallPosition < BottomBorderPosition ||
+                        c.rightWallPosition > RightBorderPosition ||
+                        c.leftWallPosition < LeftBorderPosition)
+                    {
+                        c.respawn();
+
+                        c.weight = 1;
+
+                        foreach (Client c2 in clientArray)
                         {
-                            Client c2 = clientArray[j];
+                            //Client c2 = clientArray[j];
+                            c2.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
+                        }
+                    }
 
-                            if (!c.Equals(c2) && c.collided(c2))
-                            {
-                                //client 1 has eaten client 2 and we will increase the weight of client 1 and reset client 2
-                                if (c.weight > c2.weight)
-                                {
-                                    int weightAdded = c2.weight;
-                                    c.weight += weightAdded;
-									c.score += 10;
-									dm.updateHighScores (c.clientName, c.score);
-									dm.sendPacket ("update", c.clientName, c.score);
-									dm.printHighTable ();
-                                    c2.weight = 1;
-                                    c2.respawn();
-
-                                    for (int k = 0; k < numberOfClients; k++)
-                                    {
-                                        Client c3 = clientArray[k];
-                                        c3.sw.WriteLine("weight\\" + c.clientNumber + "\\" + weightAdded);
-										c3.sw.WriteLine ("score\\" + c.clientNumber + "\\" + c.score);
-                                        c3.sw.WriteLine("resetPlayer\\" + c2.clientNumber + "\\" + c2.whalePositionX + "\\" + c2.whalePositionY);
-                                    }
-                                }
-                                //client 2 has eaten client 1 and we will increase the weight of client 2 and reset client 1
-                                else if (c2.weight > c.weight)
-                                {
-                                    int weightAdded = c.weight;
-                                    c2.weight += weightAdded;
-									c2.score += 10;
-									dm.updateHighScores (c2.clientName, c2.score);
-									dm.sendPacket ("update", c2.clientName, c2.score);
-									dm.printHighTable ();
-                                    c.weight = 1;
-                                    c.respawn();
-
-                                    for (int k = 0; k < numberOfClients; k++)
-                                    {
-                                        Client c3 = clientArray[k];
-                                        c3.sw.WriteLine("weight\\" + c2.clientNumber + "\\" + weightAdded);
-										c3.sw.WriteLine ("score\\" + c2.clientNumber + "\\" + c2.score);
-                                        c3.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
-                                    }
-                                }
-                                    
-                                //both clients have the same weight and we reset both of their positions and weights
-                                else 
-                                {
-                                    c.weight = 1;
-                                    c2.weight = 1;
-                                    c.respawn();
-                                    c2.respawn();
-
-                                    for (int k = 0; k < numberOfClients; k++)
-                                    {
-                                        Client c3 = clientArray[k];
-                                        c3.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
-                                        c3.sw.WriteLine("resetPlayer\\" + c2.clientNumber + "\\" + c2.whalePositionX + "\\" + c2.whalePositionY);
-                                    }
-                                }
-                            }
+                    //if a client has reached the winning weight, we will broadcast this to all the clients
+                    if (c.weight >= winningWeight && playing)
+                    {
+                        foreach (Client c2 in clientArray)
+                        {
+                            // Client c2 = clientArray[j];
+                            c2.sw.WriteLine("winningClient\\" + c.clientNumber);
                         }
 
-                        //if the client collides with any of the borders, reset their weight and position
-                        if (c.topWallPosition > TopBorderPosition ||
-                            c.bottomWallPosition < BottomBorderPosition ||
-                            c.rightWallPosition > RightBorderPosition ||
-                            c.leftWallPosition < LeftBorderPosition)
-                        {
-                            c.respawn();
-                            c.weight = 1;
-
-                            for (int j = 0; j < numberOfClients; j++)
-                            {
-                                Client c2 = clientArray[j];
-                                c2.sw.WriteLine("resetPlayer\\" + c.clientNumber + "\\" + c.whalePositionX + "\\" + c.whalePositionY);
-                            }
-                        }
-
-                        //if a client has reached the winning weight, we will broadcast this to all the clients
-                        if (c.weight >= winningWeight && playing)
-                        {
-                            for (int j = 0; j < numberOfClients; j++)
-                            {
-                                Client c2 = clientArray[j];
-
-                                c2.sw.WriteLine("winningClient\\" + c.clientNumber);
-                            }
-
-							dm.sendPacket ("save", c.clientName, c.score);
-
-							 
-
-                            playing = false;
-                        }
+                        playing = false;
                     }
                 }
             }
+            // }
 
         }
 
@@ -598,14 +585,14 @@ namespace SwarchServer
             public Thread thread;
 
             public int clientNumber;
-			public string clientName;
+            public string clientName;
             public int weight = 1;
-			public int score = 0;
+            public int score = 0;
             public float whalePositionX = 0;
             public float whalePositionY = 0;
             public float xVelocity = 0;
             public float yVelocity = 0;
-            public float width = 0.3f;
+            public float width = 0.4f;
             public float height = 0.4f;
 
             public float rightWallPosition;
@@ -633,16 +620,16 @@ namespace SwarchServer
 
                 switch (clientNumber)
                 {
-                    case(1) :
+                    case (1):
                         updatePosition(-2.5f, 0);
                         break;
-                    case(2) :
+                    case (2):
                         updatePosition(0, 2.5f);
                         break;
-                    case(3) :
+                    case (3):
                         updatePosition(2.5f, 0);
                         break;
-                    case(4) :
+                    case (4):
                         updatePosition(0, -2.5f);
                         break;
                 }
@@ -675,6 +662,8 @@ namespace SwarchServer
             public void respawn()
             {
 
+                Console.WriteLine("Client " + this.clientNumber + " was told to respawn");
+
                 whalePositionX = (float)(rng.NextDouble()) * 4.0f;
                 whalePositionY = (float)(rng.NextDouble()) * 4.0f;
 
@@ -683,6 +672,15 @@ namespace SwarchServer
 
                 if (rng.NextDouble() < 0.5)
                     whalePositionY *= -1;
+
+                width = height = 0.4f;
+
+                updateBorders();
+
+            }
+
+            public void updateBorders()
+            {
 
                 rightWallPosition = whalePositionX + (width * 0.5f);
                 leftWallPosition = whalePositionX - (width * 0.5f);
@@ -699,7 +697,6 @@ namespace SwarchServer
                     while (true)
                     {
 
-
                         string data = sr.ReadLine();
 
                         lock (commandQueue)
@@ -711,7 +708,11 @@ namespace SwarchServer
 
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    //Console.WriteLine(e.InnerException);
+                    //If the steam closes we will catch the exception and remove the client from the game
+                    //properly
+                    Console.WriteLine(e.Message + " Client " + this.clientNumber + " has disconnected");
+                    RemoveClient(this);
                 }
             }
         }
@@ -720,8 +721,8 @@ namespace SwarchServer
         public class Pellet
         {
             public float weight = 1;
-            public float width = 0.25f;
-            public float height = 0.25f;
+            public float width = 0.35f;
+            public float height = 0.35f;
             public float positionX;
             public float positionY;
             public int pelletID;
