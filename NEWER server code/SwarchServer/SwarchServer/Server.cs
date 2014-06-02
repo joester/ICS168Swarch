@@ -422,6 +422,7 @@ namespace SwarchServer
 									Console.WriteLine("Name about to be removed {0}", tokens[1]);
 									loginNames.Remove(tokens[1]);
 									dm.deleteFromHighScores(client.clientName);
+									dm.sendPacket("remove", client.clientName, client.score);
 								}
 								else if (tokens[0].Equals("disconnect"))
 								{
