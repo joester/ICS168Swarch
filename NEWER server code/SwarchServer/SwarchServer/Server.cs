@@ -15,8 +15,8 @@ namespace SwarchServer
     class Server
     {
 
-        public static SQLiteConnection swarchDatabase;
-        string name, password;
+        
+        
         public static DataManager dm;
 
         protected int maxPlayers;
@@ -68,7 +68,7 @@ namespace SwarchServer
             BottomBorderPosition = LeftBorderPosition = -5.0f;
 
             rng = new Random();
-            listener = new TcpListener(4185);
+			listener = new TcpListener(4188);
             socArray = new Socket[maxPlayers];
             clientArray = new LinkedList<Client>();
             pelletArray = new Pellet[numberOfPellets];
@@ -106,8 +106,8 @@ namespace SwarchServer
                         StreamWriter sw = new StreamWriter(nws); //establish a stream to read to
                         sw.AutoFlush = true;//enable automatic flushing, flush thte wrtie stream after every write command, no need to send buffered data
 
-                        int clientNumber = availableClientNumbers.First.Value;
-                        availableClientNumbers.RemoveFirst();
+						int clientNumber = availableClientNumbers.First.Value;
+						availableClientNumbers.RemoveFirst();
 
                         Client client = new Client(nws, sr, sw, clientNumber);
                         client.thread.Start();
@@ -116,7 +116,8 @@ namespace SwarchServer
 
                         numberOfClients++;
 
-                        //loop.playerConnected();
+
+						//loop.playerConnected();
 
                         Console.WriteLine("Client " + client.clientNumber + " has connected");
                         client.sw.WriteLine("client\\" + client.clientNumber);
@@ -137,9 +138,12 @@ namespace SwarchServer
         //and inform all other clients that this client has disconnected
         public static void RemoveClient(Client client)
         {
+			client.thread.Abort ();
             availableClientNumbers.AddLast(client.clientNumber);
             clientArray.Remove(client);
             numberOfClients--;
+			dm.sendPacket("remove", client.clientName, client.score);
+
 
             foreach (Client c in clientArray)
             {
@@ -172,12 +176,13 @@ namespace SwarchServer
             public bool ClientsReady(LinkedList<Client> clients, LinkedListNode<Client> currentClient)
             {
 
+
                 if (currentClient.Next == null)
                     return currentClient.Value.clientReady;
                 else
                     return currentClient.Value.clientReady && ClientsReady(clientArray, currentClient.Next);
 
-                return false;
+				return false;
 
             }
 
@@ -229,7 +234,7 @@ namespace SwarchServer
                     try
                     {
                         //if all connected clients are read, we can start the game
-                        if (ClientsReady(clientArray, clientArray.First) && numberOfClients > 1)
+						if (numberOfClients > 1 && ClientsReady(clientArray, clientArray.First))
                         {
                             //create all the pellets on the server
                             for (int i = 0; i < numberOfPellets; i++)
@@ -272,7 +277,7 @@ namespace SwarchServer
                         foreach (Client client in clientArray)
                         {
                             //the server must check if it has recieved any commands from the clients
-                            if (client.commandQueue.Count > 0)
+							if (client.commandQueue.Count > 0)
                             {
                                 //each command is a string that will be delimited by \\
                                 string command = client.commandQueue.Dequeue();
@@ -336,6 +341,7 @@ namespace SwarchServer
                                             dm.insertIntoHighScores(client.clientName, client.score);
                                             dm.printTable();
                                             dm.printHighTable();
+											dm.sendPacket("add", client.clientName, client.score);
                                         }
 
 
@@ -408,7 +414,7 @@ namespace SwarchServer
                                     //client1.sw.WriteLine("lag\\" + ticks);
                                 }
 
-<<<<<<< HEAD
+
 								else if (tokens[0].Equals("logout"))
 								{
 									Console.WriteLine("Name about to be removed {0}", tokens[1]);
@@ -418,17 +424,9 @@ namespace SwarchServer
 								}
 								else if (tokens[0].Equals("disconnect"))
 								{
+									dm.sendPacket("remove", client.clientName, client.score);
 								}
-=======
-                                else if (tokens[0].Equals("logout"))
-                                {
-                                    Console.WriteLine("Name about to be removed {0}", tokens[1]);
-                                    loginNames.Remove(tokens[1]);
-                                }
-                                else if (tokens[0].Equals("disconnect"))
-                                {
-                                }
->>>>>>> FETCH_HEAD
+
 
                                 else
                                 {
@@ -441,7 +439,10 @@ namespace SwarchServer
                     }
                     catch (Exception e)
                     {
-                        //Console.WriteLine(e.Message);
+
+						Console.WriteLine (e.StackTrace);
+						Console.WriteLine (e.Message);
+
                     }
                 }
             }
@@ -468,6 +469,7 @@ namespace SwarchServer
                             c.updateBorders();
                             c.score += 1;
                             dm.updateHighScores(c.clientName, c.score);
+							dm.sendPacket ("update", c.clientName, c.score);
                             dm.printHighTable();
 
 
@@ -501,6 +503,7 @@ namespace SwarchServer
                                 c.updateBorders();
                                 c.score += 10;
                                 dm.updateHighScores(c.clientName, c.score);
+								dm.sendPacket ("update", c.clientName, c.score);
                                 dm.printHighTable();
                                 c2.weight = 1;
                                 c2.respawn();
@@ -523,6 +526,7 @@ namespace SwarchServer
                                 c2.updateBorders();
                                 c2.score += 10;
                                 dm.updateHighScores(c2.clientName, c2.score);
+								dm.sendPacket ("update", c2.clientName, c2.score);
                                 dm.printHighTable();
                                 c.weight = 1;
                                 c.respawn();
@@ -574,6 +578,7 @@ namespace SwarchServer
                     //if a client has reached the winning weight, we will broadcast this to all the clients
                     if (c.weight >= winningWeight && playing)
                     {
+						dm.sendPacket("gameover", c.clientName, c.clientNumber);
                         foreach (Client c2 in clientArray)
                         {
                             // Client c2 = clientArray[j];
@@ -620,6 +625,7 @@ namespace SwarchServer
             //the stream reader used by the server to read in client messages
             //the stream writer used by the server to send the client messages
             //an assigned client number
+
             public Client(NetworkStream nws, StreamReader sr, StreamWriter sw, int clientNumber)
             {
                 this.nws = nws;
