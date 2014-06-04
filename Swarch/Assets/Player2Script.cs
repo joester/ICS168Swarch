@@ -40,7 +40,7 @@ public class Player2Script : MonoBehaviour {
 		currentYPosition = 0f;
 		lastYPosition = 0f;
 		
-		threshold = 0.05f;
+		threshold = 0.1f;
 		weight = 1;
 		score = 0;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
@@ -107,7 +107,7 @@ public class Player2Script : MonoBehaviour {
 		//Makes sure that the player's score text follows the player as it moves
 		GameObject.FindGameObjectWithTag("Weight2").transform.position = 
 			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
-		GameObject.FindGameObjectWithTag("Weight2").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 3;
+		GameObject.FindGameObjectWithTag("Weight2").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 2;
 		GameObject.FindGameObjectWithTag("Weight2").guiText.text = score + "";
 	}
 
@@ -135,6 +135,8 @@ public class Player2Script : MonoBehaviour {
 					lastYPosition = currentYPosition;
 					gp.returnSocket().SendTCPPacket("position\\y\\" + currentYPosition);
 				}	
+
+			
 			}
 		}
 	}

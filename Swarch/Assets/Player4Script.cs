@@ -107,7 +107,7 @@ public class Player4Script : MonoBehaviour {
 		//Makes sure that the player's score text follows the player as it moves
 		GameObject.FindGameObjectWithTag("Weight4").transform.position = 
 			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
-		GameObject.FindGameObjectWithTag("Weight4").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 3;
+		GameObject.FindGameObjectWithTag("Weight4").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 2;
 		GameObject.FindGameObjectWithTag("Weight4").guiText.text = score + "";
 	}
 

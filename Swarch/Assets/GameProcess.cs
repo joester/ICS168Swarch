@@ -166,8 +166,10 @@ public class GameProcess : MonoBehaviour {
 					//...if this client is not client 1 in which case it already has more recent velocity info
 					if (clientNumber != 1)
 					{
-						GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().xVelocity = Convert.ToSingle (tokens[2]);
-						GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().yVelocity = Convert.ToSingle (tokens[3]);
+						GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().xVelocity = 
+							Convert.ToSingle (tokens[2]);
+						GameObject.FindGameObjectWithTag("Player1").GetComponent<Player1Script>().yVelocity = 
+							Convert.ToSingle (tokens[3]);
 					}
 				}
 
@@ -177,8 +179,10 @@ public class GameProcess : MonoBehaviour {
 					//...if this client is not client 2 in which case it already has more recent velocity info
 					if (clientNumber != 2)
 					{
-						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().xVelocity = Convert.ToSingle (tokens[2]);
-						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().yVelocity = Convert.ToSingle (tokens[3]);
+						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().xVelocity = 
+							Convert.ToSingle (tokens[2]);
+						GameObject.FindGameObjectWithTag ("Player2").GetComponent<Player2Script>().yVelocity = 
+							Convert.ToSingle (tokens[3]);
 					}
 				}
 
@@ -188,8 +192,10 @@ public class GameProcess : MonoBehaviour {
 					//...if this client is not client 3 in which case it already has more recent velocity info
 					if (clientNumber != 3)
 					{
-						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().xVelocity = Convert.ToSingle (tokens[2]);
-						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().yVelocity = Convert.ToSingle (tokens[3]);
+						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().xVelocity = 
+							Convert.ToSingle (tokens[2]);
+						GameObject.FindGameObjectWithTag ("Player3").GetComponent<Player3Script>().yVelocity = 
+							Convert.ToSingle (tokens[3]);
 					}
 				}
 
@@ -199,8 +205,10 @@ public class GameProcess : MonoBehaviour {
 					//...if this client is not client 4 in which case it already has more recent velocity info
 					if (clientNumber != 4)
 					{
-						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().xVelocity = Convert.ToSingle (tokens[2]);
-						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().yVelocity = Convert.ToSingle (tokens[3]);
+						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().xVelocity = 
+							Convert.ToSingle (tokens[2]);
+						GameObject.FindGameObjectWithTag ("Player4").GetComponent<Player4Script>().yVelocity =
+							Convert.ToSingle (tokens[3]);
 					}
 				}
 			}
@@ -255,8 +263,16 @@ public class GameProcess : MonoBehaviour {
 			//winningClient\\winningClientNumber
 			else if (tokens[0].Equals("winningClient"))
 			{
-				//set the text on screen to indicate to all players which client won
-				GameObject.Find("GameGUI").GetComponent<GameGUIScript>().guiText.text = "Player " + tokens[1] + " wins!";
+				if (tokens[1].Equals(playerName))
+				{
+					GameObject.Find("WinnerGUI").guiText.text = "You win!";
+				}
+
+				else
+				{
+					//set the text on screen to indicate to all players which client won
+					GameObject.Find("WinnerGUI").guiText.text = tokens[1] + " wins!";
+				}
 
 				//remove the ability of the players to move by setting the play variable to false
 				play = false;
@@ -266,12 +282,9 @@ public class GameProcess : MonoBehaviour {
 			}
 
 			//moves a specific player's avatar to a random position and resets the scale to the default
-			//resetPlayer\\clientNumber
+			//resetPlayer\\clientNumber\\xPos\\yPos
 			else if (tokens[0].Equals("resetPlayer"))
 			{
-				//reset the scale of the client's avatar to the default: Vector3(3,3,0)
-				GameObject.FindGameObjectWithTag("Player" + Int32.Parse(tokens[1])).transform.localScale = new Vector3 (3f, 3f, 0f);
-
 				//changes player 1's avatar to a new random location and resets the weight to 1
 				//Note: the weight is responsible for altering the velocity of the avatar
 				if(tokens[1].Equals("1"))
@@ -307,6 +320,9 @@ public class GameProcess : MonoBehaviour {
 					GameObject.FindGameObjectWithTag("Player4").transform.position = 
 						new Vector3(Convert.ToSingle(tokens[2]), Convert.ToSingle(tokens[3]), 0f);
 				}
+
+				//reset the scale of the client's avatar to the default: Vector3(3,3,0)
+				GameObject.FindGameObjectWithTag("Player" + Int32.Parse(tokens[1])).transform.localScale = new Vector3 (3f, 3f, 0f);
 			}
 
 			//update an avatar's weight (increasing scale and effectively decreasing speed)
@@ -370,6 +386,33 @@ public class GameProcess : MonoBehaviour {
 						GameObject.FindGameObjectWithTag ("Player4").transform.localScale = 
 							new Vector3(oldScale.x + delta, oldScale.y + delta, oldScale.z);
 						break;	
+				}
+			}
+
+			else if (tokens[0].Equals("disconnected"))
+			{
+				int clientThatJustDisconnected = Int32.Parse (tokens[1]);
+				
+				//destroys a player avatar corresponding to the information from the packet (see above)
+				//also destroys the playerWeight GUIText of that player
+				switch (clientThatJustDisconnected)
+				{
+				case 1:
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Player1"));
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Weight1"));
+					break;
+				case 2:
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Player2"));
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Weight2"));
+					break;
+				case 3:
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Player3"));
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Weight3"));
+					break;
+				case 4:
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Player4"));
+					GameObject.Destroy(GameObject.FindGameObjectWithTag("Weight4"));
+					break;					
 				}
 			}
 

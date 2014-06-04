@@ -40,7 +40,7 @@ public class Player1Script : MonoBehaviour {
 		currentYPosition = 0f;
 		lastYPosition = 0f;
 
-		threshold = 0.05f;
+		threshold = 0.1f;
 		weight = 1;
 		score = 0;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
@@ -79,13 +79,14 @@ public class Player1Script : MonoBehaviour {
 			currentXVelocity = xVelocity;
 			currentYVelocity = yVelocity;
 
+			
 			//if either of the velocities have changed, send the new velocity to the server
 			if (currentXVelocity != lastXVelocity)
 			{
 				gp.returnSocket().SendTCPPacket("velocity\\x\\"+currentXVelocity);
 				lastXVelocity = currentXVelocity;
 			}
-
+			
 			if (currentYVelocity != lastYVelocity)
 			{
 				gp.returnSocket().SendTCPPacket("velocity\\y\\"+currentYVelocity);
@@ -93,7 +94,7 @@ public class Player1Script : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	void FixedUpdate()
 	{
 		//allow movement only once the game has started
@@ -107,7 +108,7 @@ public class Player1Script : MonoBehaviour {
 		//Makes sure that the player's score text follows the player as it moves
 		GameObject.FindGameObjectWithTag("Weight1").transform.position = 
 			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
-		GameObject.FindGameObjectWithTag("Weight1").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 3;
+		GameObject.FindGameObjectWithTag("Weight1").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 2;
 		GameObject.FindGameObjectWithTag("Weight1").guiText.text = score + "";
 	}
 
@@ -135,6 +136,7 @@ public class Player1Script : MonoBehaviour {
 					lastYPosition = currentYPosition;
 					gp.returnSocket().SendTCPPacket("position\\y\\" + currentYPosition);
 				}
+
 			}			
 		}
 	}

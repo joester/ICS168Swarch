@@ -40,7 +40,7 @@ public class Player3Script : MonoBehaviour {
 		currentYPosition = 0f;
 		lastYPosition = 0f;
 		
-		threshold = 0.05f;
+		threshold = 0.1f;
 		weight = 1;
 		score = 0;
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>();
@@ -107,7 +107,7 @@ public class Player3Script : MonoBehaviour {
 		//Makes sure that the player's score text follows the player as it moves
 		GameObject.FindGameObjectWithTag("Weight3").transform.position = 
 			new Vector3((transform.position.x + 5f) / 10f, (transform.position.y + 5f) / 10f, 0f);
-		GameObject.FindGameObjectWithTag("Weight3").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 3;
+		GameObject.FindGameObjectWithTag("Weight3").guiText.fontSize = Convert.ToInt32(this.transform.localScale.x) * 2;
 		GameObject.FindGameObjectWithTag("Weight3").guiText.text = score + "";
 	}
 
