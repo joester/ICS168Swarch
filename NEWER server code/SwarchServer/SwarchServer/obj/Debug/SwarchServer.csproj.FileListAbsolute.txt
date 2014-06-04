@@ -13,3 +13,4 @@ C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\NEWER server code\SwarchServer\
 C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\NEWER server code\SwarchServer\SwarchServer\bin\Debug\SwarchServer.pdb
 C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\NEWER server code\SwarchServer\SwarchServer\bin\Debug\System.Data.SQLite.xml
 C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\NEWER server code\SwarchServer\SwarchServer\obj\Debug\SwarchServer.csprojResolveAssemblyReference.cache
+C:\Users\tenor_000\Documents\GitHub\ICS168Swarch\NEWER server code\SwarchServer\SwarchServer\bin\Debug\Newtonsoft.Json.dll
