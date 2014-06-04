@@ -25,7 +25,7 @@ public class GameGUIScript : MonoBehaviour {
 			{
 				gp.returnSocket().SendTCPPacket("play");
 
-				guiText.text = "Waiting for other players who have connected to press start...";
+				guiText.text = "Waiting for other players to press Start...";
 				showStart = false;
 			}
 		}
@@ -37,6 +37,8 @@ public class GameGUIScript : MonoBehaviour {
 			{			
 				//send a disconnect packet
 				gp.returnSocket().SendTCPPacket("logout\\" + gp.playerName);
+
+				//yield WaitForSeconds.WaitForSeconds (3f);	
 
 				//keep the gameprocess object intact and return to main menu (level 0)
 				DontDestroyOnLoad(gp);

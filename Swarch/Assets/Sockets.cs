@@ -8,11 +8,10 @@ using System.Diagnostics;
 using System.Threading;
 
 public class Sockets {
-	
 
 	private string SERVER_LOCATION = "169.234.19.52";
-    const int SERVER_PORT = 4188; //FILL THESE OUT FOR YOUR OWN SERVER
-
+    const int SERVER_PORT = 4185; //FILL THESE OUT FOR YOUR OWN SERVER
+	
 	public TcpClient client;
 
 	public NetworkStream nws;
